@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+ - Add error labels.
+ - Exposed ```util``` for Calculated Value.
+ - ```parseFloat``` extension on FormioUtils.
+ - ```formatAsCurrency``` function on FormioUtils.
+ - A way for the setValue to take an object of flags instead of function params.
+
+### Fixed
+ - An issue where an infinite loop would trigger for calculatedValue's.
 
 ## 2.13.4
 ### Added
