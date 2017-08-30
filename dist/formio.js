@@ -451,19 +451,14 @@ var Formio = function () {
         });
       }
 
-      var download = '';
-      download = Formio.baseUrl;
-      if (form.project) {
-        download += '/project/' + form.project;
-      }
-      download += '/form/' + form._id;
-      download += '/submission/' + this.submissionId;
-      download += '/download';
-      if (form.settings && form.settings.pdf) {
-        download += '/' + form.settings.pdf.id;
-      }
+      var apiUrl = '/project/' + form.project;
+      apiUrl += '/form/' + form._id;
+      apiUrl += '/submission/' + this.submissionId;
+      apiUrl += '/download';
+
+      var download = Formio.baseUrl + apiUrl;
       return new Promise(function (resolve, reject) {
-        _this2.getTempToken(3600, 'GET:' + download.replace(Formio.baseUrl, '')).then(function (tempToken) {
+        _this2.getTempToken(3600, 'GET:' + apiUrl).then(function (tempToken) {
           download += '?token=' + tempToken.key;
           resolve(download);
         }, function () {
@@ -679,12 +674,15 @@ var Formio = function () {
         options.body = JSON.stringify(data);
       }
 
-      var requestToken = headers.get('x-jwt-token');
-
       // Allow plugins to alter the options.
       options = Formio.pluginAlter('requestOptions', options, url);
 
+      var requestToken = options.headers.get('x-jwt-token');
+
       var requestPromise = fetch(url, options).then(function (response) {
+        // Allow plugins to respond.
+        response = Formio.pluginAlter('requestResponse', response, Formio);
+
         if (!response.ok) {
           if (response.status === 440) {
             Formio.setToken(null);
