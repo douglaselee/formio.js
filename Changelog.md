@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## 2.16.0
+### Added
+ - Cookie fallback for storing tokens and user values.
+
+### Fixed
+ - Default values overriding values when new form is set.
+
 ## 2.15.2
 ### Added
  - Ability to respond to ajax requests in a plugin.
