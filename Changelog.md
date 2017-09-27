@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.17.6
+### Fixed
+ - Fixed the search input to work with select fields.
+ - Fixed the Radio components to allow for boolean and numeric values.
+ - Fixed the disabled flag to not allow add another options, and fixed button on disable.
+ - Fixed an issue with a crash that was causing selectboxes to not render within a data grid.
+ - Fixed issue where the errors would not show up on Radio elements.
+ - Fixed the DateTime calendar to only open the calendar if it has not already been closed.
+
+## 2.17.5
+### Added
+ - minDate and maxDate for DateTime fields.
+ - Custom headers for the requests of a select dropdown.
+
+### Fixed
+ - The calendar to hide and show when the icon is clicked.
+ - Issues where placeholders would not show up in the DateTime component.
+ - Default dates for DateTime component.
+
 ## 2.17.4
 ### Fixed
  - Issue where calculated values were not getting triggered on form component.
