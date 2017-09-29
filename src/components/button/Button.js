@@ -28,7 +28,7 @@ export class ButtonComponent extends BaseComponent {
       if (loading) {
         this.element.appendChild(this.loader);
       }
-      else {
+      else if (this.element.contains(this.loader)) {
         this.element.removeChild(this.loader);
       }
     }
@@ -58,6 +58,10 @@ export class ButtonComponent extends BaseComponent {
       this.on('submitDone', () => {
         this.loading = false;
         this.disabled = false;
+      }, true);
+      this.on('change', (value) => {
+        this.loading = false;
+        this.disabled = (this.component.disableOnInvalid && !this.root.isValid(value.data, true));
       }, true);
       this.on('error', () => {
         this.loading = false;
@@ -111,7 +115,7 @@ export class ButtonComponent extends BaseComponent {
           break;
       }
     });
-    if (this.options.readOnly) {
+    if (this.shouldDisable) {
       this.disabled = true;
     }
   }
