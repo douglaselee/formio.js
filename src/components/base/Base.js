@@ -7,6 +7,7 @@ import _debounce from 'lodash/debounce';
 import _isArray from 'lodash/isArray';
 import _clone from 'lodash/clone';
 import _defaults from 'lodash/defaults';
+import _isEqual from 'lodash/isEqual';
 import i18next from 'i18next';
 import FormioUtils from '../../utils';
 import { Validator } from '../Validator';
@@ -63,6 +64,13 @@ export class BaseComponent {
     }
 
     this.options.i18n = i18n;
+
+    /**
+     * Determines if this component has a condition assigned to it.
+     * @type {null}
+     * @private
+     */
+    this._hasCondition = null;
 
     /**
      * The events that are triggered for the whole FormioForm object.
@@ -361,11 +369,8 @@ export class BaseComponent {
       this.disabled = true;
     }
 
-    // Set default values.
-    let defaultValue = this.defaultValue;
-    if (!this.data.hasOwnProperty(this.component.key) && defaultValue) {
-      this.setValue(defaultValue);
-    }
+    // Restore the value.
+    this.restoreValue();
   }
 
   /**
@@ -498,6 +503,15 @@ export class BaseComponent {
   }
 
   /**
+   * Sets the pristine flag for this component.
+   *
+   * @param pristine {boolean} - TRUE to make pristine, FALSE not pristine.
+   */
+  setPristine(pristine) {
+    this.pristine = pristine;
+  }
+
+  /**
    * Adds a new empty value to the data array.
    */
   addNewValue() {
@@ -516,6 +530,7 @@ export class BaseComponent {
   addValue() {
     this.addNewValue();
     this.buildRows();
+    this.restoreValue();
   }
 
   /**
@@ -606,6 +621,15 @@ export class BaseComponent {
   }
 
   /**
+   * Get the error message provided a certain type of error.
+   * @param type
+   * @return {*}
+   */
+  errorMessage(type) {
+    return (this.component.errors && this.component.errors[type]) ? this.component.errors[type] :  type;
+  }
+
+  /**
    * Creates a new "remove" row button and returns the html element of that button.
    * @param {number} index - The index of the row that should be removed.
    * @returns {HTMLElement} - The html element of the remove button.
@@ -656,22 +680,24 @@ export class BaseComponent {
    * Create the HTML element for the tooltip of this component.
    * @param {HTMLElement} container - The containing element that will contain this tooltip.
    */
-  createTooltip(container) {
-    if (!this.component.tooltip) {
+  createTooltip(container, component, classes) {
+    component = component || this.component;
+    classes = classes || 'glyphicon glyphicon-question-sign text-muted';
+    if (!component.tooltip) {
       return;
     }
     this.tooltip = this.ce('i', {
-      class: 'glyphicon glyphicon-question-sign text-muted'
+      class: classes
     });
     container.appendChild(this.text(' '));
     container.appendChild(this.tooltip);
-
     new Tooltip(this.tooltip, {
       delay: {
         hide: 100
       },
       placement: 'right',
-      title: this.component.tooltip
+      html: true,
+      title: component.tooltip.replace(/(?:\r\n|\r|\n)/g, '<br />')
     });
   }
 
@@ -975,14 +1001,34 @@ export class BaseComponent {
    */
   removeClass(element, className) {
     var cls = element.getAttribute('class');
-    cls = cls.replace(className, '');
-    element.setAttribute('class', cls);
+    if (cls) {
+      cls = cls.replace(className, '');
+      element.setAttribute('class', cls);
+    }
+  }
+
+  /**
+   * Determines if this component has a condition defined.
+   *
+   * @return {null}
+   */
+  hasCondition() {
+    if (this._hasCondition !== null) {
+      return this._hasCondition;
+    }
+
+    this._hasCondition = FormioUtils.hasCondition(this.component);
+    return this._hasCondition;
   }
 
   /**
    * Check for conditionals and hide/show the element based on those conditions.
    */
   checkConditions(data) {
+    if (!this.hasCondition()) {
+      return this.show(true);
+    }
+
     return this.show(FormioUtils.checkCondition(this.component, this.data, data));
   }
 
@@ -1018,6 +1064,11 @@ export class BaseComponent {
    * @param show
    */
   show(show) {
+    // Execute only if visibility changes.
+    if (!show === !this._visible) {
+      return show;
+    }
+
     this._visible = show;
     let element = this.getElement();
     if (element) {
@@ -1032,6 +1083,13 @@ export class BaseComponent {
         element.style.position = 'absolute';
       }
     }
+
+    if (!show && this.component.clearOnHide) {
+      this.setValue(null, {
+        noValidate: true
+      });
+    }
+
     return show;
   }
 
@@ -1045,17 +1103,25 @@ export class BaseComponent {
     return this._visible;
   }
 
-  onChange(flags) {
+  onChange(flags, fromRoot) {
     flags = flags || {};
     if (!flags.noValidate) {
       this.pristine = false;
     }
-    if (this.events) {
-      this.emit('componentChange', {
-        component: this.component,
-        value: this.value,
-        flags: flags
-      });
+
+    // Set the changed variable.
+    let changed = {
+      component: this.component,
+      value: this.value,
+      flags: flags
+    };
+
+    // Emit the change.
+    this.emit('componentChange', changed);
+
+    // Bubble this change up to the top.
+    if (this.root && !fromRoot) {
+      this.root.triggerChange(flags, changed);
     }
   }
 
@@ -1086,20 +1152,13 @@ export class BaseComponent {
    * @param container
    * @param noSet
    */
-  addInput(input, container, noSet) {
+  addInput(input, container) {
     if (input && container) {
       this.inputs.push(input);
       input = container.appendChild(input);
     }
     this.addInputEventListener(input);
     this.addInputSubmitListener(input);
-
-    // Reset the values of the inputs.
-    if (!noSet && this.data && this.data.hasOwnProperty(this.component.key)) {
-      this.setValue(this.data[this.component.key], {
-        noUpdate: true
-      });
-    }
   }
 
   /**
@@ -1128,25 +1187,49 @@ export class BaseComponent {
     return values;
   }
 
+  /**
+   * Determine if the value of this component has changed.
+   *
+   * @param before
+   * @param after
+   * @return {boolean}
+   */
+  hasChanged(before, after) {
+    return !_isEqual(before, after);
+  }
+
+  /**
+   * Update a value of this component.
+   *
+   * @param flags
+   */
   updateValue(flags) {
     flags = flags || {};
-    if (flags.noUpdate) {
-      return;
-    }
     let value = this.data[this.component.key];
-    let falsey = !value && (value !== null) && (value !== undefined);
     this.data[this.component.key] = this.getValue();
-    let changed = (value !== this.data[this.component.key]);
-    if (!changed) {
-      return;
+    let changed = this.hasChanged(value, this.data[this.component.key]);
+    if (!flags.noUpdateEvent && changed) {
+      this.triggerChange(flags);
     }
-    if (falsey) {
-      if (!!this.data[this.component.key]) {
-        this.triggerChange(flags);
-      }
+    return changed;
+  }
+
+  /**
+   * Restore the value of a control.
+   */
+  restoreValue() {
+    if (this.data && this.data.hasOwnProperty(this.component.key)) {
+      this.setValue(this.data[this.component.key], {
+        noUpdateEvent: true
+      });
     }
     else {
-      this.triggerChange(flags);
+      let defaultValue = this.defaultValue;
+      if (!this.data.hasOwnProperty(this.component.key) && defaultValue) {
+        this.setValue(defaultValue, {
+          noUpdateEvent: true
+        });
+      }
     }
   }
 
@@ -1154,11 +1237,17 @@ export class BaseComponent {
    * Perform a calculated value operation.
    *
    * @param data - The global data object.
+   *
+   * @return {boolean} - If the value changed during calculation.
    */
-  calculateValue(data) {
+  calculateValue(data, flags) {
     if (!this.component.calculateValue) {
-      return;
+      return false;
     }
+
+    flags = flags || {};
+    flags.noCheck = true;
+    let changed = false;
 
     // If this is a string, then use eval to evalulate it.
     if (typeof this.component.calculateValue === 'string') {
@@ -1167,13 +1256,12 @@ export class BaseComponent {
         let row = this.data;
         let component = this;
         eval(this.component.calculateValue.toString());
-        this.setValue(value, {
-          noCheck: true
-        });
+        changed = this.setValue(value, flags);
       }
       catch (e) {
         /* eslint-disable no-console */
         console.warn('An error occurred calculating a value for ' + this.component.key, e);
+        changed = false;
         /* eslint-enable no-console */
       }
     }
@@ -1183,16 +1271,17 @@ export class BaseComponent {
           data: data,
           row: this.data
         });
-        this.setValue(val, {
-          noCheck: true
-        });
+        changed = this.setValue(val, flags);
       }
       catch (err) {
         /* eslint-disable no-console */
         console.warn('An error occurred calculating a value for ' + this.component.key, e);
+        changed = false;
         /* eslint-enable no-console */
       }
     }
+
+    return changed;
   }
 
   /**
@@ -1327,7 +1416,7 @@ export class BaseComponent {
 
   getFlags() {
     return (typeof arguments[1] === 'boolean') ? {
-      noUpdate: arguments[1],
+      noUpdateEvent: arguments[1],
       noValidate: arguments[2]
     } : (arguments[1] || {});
   }
@@ -1337,18 +1426,20 @@ export class BaseComponent {
    *
    * @param value
    * @param flags
+   *
+   * @return {boolean} - If the value changed.
    */
   setValue(value, flags) {
     flags = this.getFlags.apply(this, arguments);
     if (!this.component.input) {
-      return;
+      return false;
     }
     this.value = value;
     let isArray = _isArray(value);
     for (let i in this.inputs) {
       this.setValueAt(i, isArray ? value[i] : value);
     }
-    this.updateValue(flags);
+    return this.updateValue(flags);
   }
 
   /**
@@ -1438,8 +1529,13 @@ export class BaseComponent {
   }
 
   prepend(element) {
-    if (this.element && this.element.firstChild) {
-      this.element.insertBefore(element, this.element.firstChild);
+    if (this.element) {
+      if (this.element.firstChild) {
+        this.element.insertBefore(element, this.element.firstChild);
+      }
+      else {
+        this.element.appendChild(element);
+      }
     }
   }
 

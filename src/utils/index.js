@@ -86,7 +86,15 @@ const FormioUtils = {
       }
 
       var subPath = function() {
-        if (component.key && ((component.type === 'datagrid') || (component.type === 'container'))) {
+        if (
+          component.key &&
+          (
+            (component.type === 'datagrid') ||
+            (component.type === 'container') ||
+            (component.type === 'editgrid') ||
+            component.tree
+          )
+        ) {
           return newPath;
         }
         return path;
@@ -205,9 +213,11 @@ const FormioUtils = {
    * @returns {boolean} - TRUE - This component has a conditional, FALSE - No conditional provided.
    */
   hasCondition: function(component) {
-    return (component.hasOwnProperty('customConditional') && component.customConditional) ||
+    return (
+      (component.hasOwnProperty('customConditional') && component.customConditional) ||
       (component.hasOwnProperty('conditional') && component.conditional && component.conditional.when) ||
-      (component.hasOwnProperty('conditional') && component.conditional && component.conditional.json);
+      (component.hasOwnProperty('conditional') && component.conditional && component.conditional.json)
+    ) ? true : false;
   },
 
   /**
