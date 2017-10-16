@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.20.2
+### Fixed
+ - Issues with using for in statements with arrays pulling in keys we don't want.
+ - The data view of a Signature to show the image of the signature for easy scaling.
+ 
+### Changed
+ - The Select dropdown api requests to use Formio.makeRequest so that plugins could be used.
+ - Upgrade Quill.js to 1.3.3
+
+## 2.20.1
+### Changed
+ - Upgraded Flatpickr to 4.0.4 to fix crash in IE.
+
+### Added
+ - Global option to not show the datepickr for date inputs.
+
+### Fixed
+ - Issue where a null flatpickr instance would crash renderer.
+
+## 2.20.0
+### Added
+ - Much better i18n support for Number and Currency components.
+
+### Fixed
+ - Added file input to DOM as a hidden item to fix issue with IE
+ - Select component to respect tab index
+ - Resize issues with Signature component so they scale according to devicePixelRatio.
+ 
+### Changed
+ - Force dropdowns to open only downwards
+ - Upgrade moment to 2.19.1 since they fixed React bug (https://github.com/moment/moment/issues/4216)
+
 ## 2.19.3
 ### Fixed
  - Downgraded moment to 2.18.x to fix an import issue with Webpack.

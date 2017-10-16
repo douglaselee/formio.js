@@ -19,7 +19,7 @@ export class SelectComponent extends BaseComponent {
         if (this.component.refreshOn === 'data') {
           this.refreshItems();
         }
-        else if (event.changed.component.key === this.component.refreshOn) {
+        else if (event.changed && (event.changed.component.key === this.component.refreshOn)) {
           this.refreshItems();
         }
       });
@@ -120,12 +120,13 @@ export class SelectComponent extends BaseComponent {
     }
 
     // Make the request.
-    Formio.request(url, null, null, headers, options)
+    options.header = headers;
+    Formio.makeRequest(this.options.formio, 'select', url, null, null, options)
       .then((response) => this.setItems(response))
       .catch((err) => {
         this.events.emit('formio.error', err);
         console.warn('Unable to load resources for ' + this.component.key);
-      })
+      });
   }
 
   /**
@@ -205,6 +206,7 @@ export class SelectComponent extends BaseComponent {
     if (this.component.multiple) {
       input.setAttribute('multiple', true);
     }
+    var tabIndex = input.tabIndex;
     this.choices = new Choices(input, {
       removeItemButton: true,
       itemSelectText: '',
@@ -212,8 +214,10 @@ export class SelectComponent extends BaseComponent {
         containerOuter: 'choices form-group formio-choices',
         containerInner: 'form-control'
       },
-      shouldSort: false
+      shouldSort: false,
+      position: (this.component.dropdown || 'auto')
     });
+    this.choices.itemList.tabIndex = tabIndex;
 
     // If a search field is provided, then add an event listener to update items on search.
     if (this.component.searchField) {

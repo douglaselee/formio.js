@@ -310,6 +310,33 @@ export class BaseComponent {
     });
   }
 
+  getBrowserLanguage() {
+    var nav = window.navigator,
+      browserLanguagePropertyKeys = ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'],
+      i,
+      language;
+
+    // support for HTML 5.1 "navigator.languages"
+    if (Array.isArray(nav.languages)) {
+      for (i = 0; i < nav.languages.length; i++) {
+        language = nav.languages[i];
+        if (language && language.length) {
+          return language;
+        }
+      }
+    }
+
+    // support for other well known properties in browsers
+    for (i = 0; i < browserLanguagePropertyKeys.length; i++) {
+      language = nav[browserLanguagePropertyKeys[i]];
+      if (language && language.length) {
+        return language;
+      }
+    }
+
+    return null;
+  }
+
   /**
    * Perform the localization initialization.
    * @returns {*}
@@ -1093,7 +1120,7 @@ export class BaseComponent {
     return show;
   }
 
-  onResize(scale) {}
+  onResize() {}
 
   set visible(visible) {
     this.show(visible);
@@ -1177,11 +1204,13 @@ export class BaseComponent {
     }
     let values = [];
     for (let i in this.inputs) {
-      if (!this.component.multiple) {
-        this.value = this.getValueAt(i);
-        return this.value;
+      if (this.inputs.hasOwnProperty(i)) {
+        if (!this.component.multiple) {
+          this.value = this.getValueAt(i);
+          return this.value;
+        }
+        values.push(this.getValueAt(i));
       }
-      values.push(this.getValueAt(i));
     }
     this.value = values;
     return values;
@@ -1437,7 +1466,9 @@ export class BaseComponent {
     this.value = value;
     let isArray = _isArray(value);
     for (let i in this.inputs) {
-      this.setValueAt(i, isArray ? value[i] : value);
+      if (this.inputs.hasOwnProperty(i)) {
+        this.setValueAt(i, isArray ? value[i] : value);
+      }
     }
     return this.updateValue(flags);
   }
@@ -1553,7 +1584,7 @@ export class BaseComponent {
       name: this.options.name,
       type: this.component.inputType || 'text',
       class: 'form-control',
-      lang: i18next.language
+      lang: this.options.i18n.lng
   };
 
     if (this.component.placeholder) {

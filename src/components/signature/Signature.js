@@ -3,8 +3,8 @@ import { BaseComponent } from '../base/Base';
 export class SignatureComponent extends BaseComponent {
   constructor(component, options, data) {
     super(component, options, data);
-    this.scale = 1;
     this.currentWidth = 0;
+    this.scale = 1;
     if (!this.component.width) {
       this.component.width = '100%';
     }
@@ -25,26 +25,27 @@ export class SignatureComponent extends BaseComponent {
     super.setValue(value, flags);
     if (value && !flags.noSign && this.signaturePad) {
       this.signaturePad.fromDataURL(value);
+      this.signatureImage.setAttribute('src', value);
+      this.showCanvas(false);
     }
   }
 
-  getSignatureImage() {
-    let image = this.ce('img', {
-      style: ('width: ' + this.component.width + ';height: ' + this.component.height)
-    });
-    image.setAttribute('src', this.value);
-    return image;
-  }
-
-  onResize(scale) {
-    this.scale = scale;
-    this.checkSize(true);
+  showCanvas(show) {
+    if (show) {
+      this.canvas.style.display = 'inherit';
+      this.signatureImage.style.display = 'none';
+    }
+    else {
+      this.canvas.style.display = 'none';
+      this.signatureImage.style.display = 'inherit';
+    }
   }
 
   set disabled(disabled) {
     super.disabled = disabled;
+    this.showCanvas(!disabled);
     if (this.signaturePad) {
-      if (disabled){
+      if (disabled) {
         this.signaturePad.off();
         this.refresh.classList.add('disabled');
       } else {
@@ -61,8 +62,9 @@ export class SignatureComponent extends BaseComponent {
     }
   }
 
-  checkSize(force) {
+  checkSize(force, scale) {
     if (force || (this.padBody.offsetWidth !== this.currentWidth)) {
+      this.scale = force ? scale : this.scale;
       this.currentWidth = this.padBody.offsetWidth;
       this.canvas.width = this.currentWidth * this.scale;
       this.canvas.height = this.padBody.offsetHeight * this.scale;
@@ -101,16 +103,22 @@ export class SignatureComponent extends BaseComponent {
       height: this.component.height
     });
     this.padBody.appendChild(this.canvas);
+
+    this.signatureImage = this.ce('img', {
+      style: ('width: 100%;display: none;')
+    });
+    this.padBody.appendChild(this.signatureImage);
+
     this.element.appendChild(this.padBody);
 
     // Add the footer.
     if (this.component.footer) {
-      let footer = this.ce('div', {
+      this.signatureFooter = this.ce('div', {
         class: 'signature-pad-footer'
       });
-      footer.appendChild(this.text(this.component.footer));
-      this.createTooltip(footer);
-      this.element.appendChild(footer);
+      this.signatureFooter.appendChild(this.text(this.component.footer));
+      this.createTooltip(this.signatureFooter);
+      this.element.appendChild(this.signatureFooter);
     }
 
     // Create the signature pad.
@@ -122,6 +130,7 @@ export class SignatureComponent extends BaseComponent {
     });
     this.refresh.addEventListener("click", (event) => {
       event.preventDefault();
+      this.showCanvas(true);
       this.signaturePad.clear();
     });
     this.signaturePad.onEnd = () => this.setValue(this.signaturePad.toDataURL(), {

@@ -9,16 +9,14 @@ export const Harness = {
     timestamp = parseInt(timestamp / 1000, 10);
     return (new Date(timestamp * 1000)).toISOString();
   },
-  testCreate: function(Component, componentSettings, settings) {
-    settings = settings || {};
+  testCreate: function(Component, componentSettings, options = {}) {
     let compSettings = _cloneDeep(componentSettings);
-    _merge(compSettings, settings);
-    var component = new Component(compSettings, {
+    var component = new Component(compSettings, _merge({
       events: new EventEmitter({
         wildcard: false,
         maxListeners: 0
       })
-    });
+    }, options));
     return component.localize().then(() => {
       component.build();
       assert(!!component.element, 'No ' + component.type + ' element created.');
@@ -50,9 +48,21 @@ export const Harness = {
     }
     return elements;
   },
+  testElementAttribute: function(element, attribute, expected) {
+    if (element !== undefined && element.getAttribute(attribute)) {
+      assert.equal(expected, element.getAttribute(attribute));
+    }
+    return element;
+  },
   testSetGet: function(component, value) {
     component.setValue(value);
     assert.deepEqual(component.getValue(), value);
+    return component;
+  },
+  testSetInput: function(component, input, output, visible, index = 0) {
+    component.setValue(input);
+    assert.deepEqual(component.getValue(), output);
+    assert.deepEqual(component.inputs[index].value, visible);
     return component;
   },
   testSubmission: function(form, submission, onChange) {
