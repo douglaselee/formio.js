@@ -1200,7 +1200,7 @@ Formio.events = new EventEmitter({
 module.exports = global.Formio = Formio;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./providers":2,"browser-cookies":12,"eventemitter2":8,"native-promise-only":9,"shallow-copy":10,"whatwg-fetch":11}],2:[function(require,module,exports){
+},{"./providers":2,"browser-cookies":8,"eventemitter2":9,"native-promise-only":10,"shallow-copy":12,"whatwg-fetch":13}],2:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -1250,7 +1250,7 @@ var base64 = function base64() {
 base64.title = 'Base64';
 module.exports = base64;
 
-},{"native-promise-only":9}],4:[function(require,module,exports){
+},{"native-promise-only":10}],4:[function(require,module,exports){
 'use strict';
 
 var Promise = require("native-promise-only");
@@ -1312,7 +1312,7 @@ var dropbox = function dropbox(formio) {
 dropbox.title = 'Dropbox';
 module.exports = dropbox;
 
-},{"native-promise-only":9}],5:[function(require,module,exports){
+},{"native-promise-only":10}],5:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -1432,7 +1432,7 @@ var s3 = function s3(formio) {
 s3.title = 'S3';
 module.exports = s3;
 
-},{"native-promise-only":9}],7:[function(require,module,exports){
+},{"native-promise-only":10}],7:[function(require,module,exports){
 'use strict';
 
 var Promise = require("native-promise-only");
@@ -1511,7 +1511,103 @@ var url = function url(formio) {
 url.title = 'Url';
 module.exports = url;
 
-},{"native-promise-only":9}],8:[function(require,module,exports){
+},{"native-promise-only":10}],8:[function(require,module,exports){
+exports.defaults = {};
+
+exports.set = function(name, value, options) {
+  // Retrieve options and defaults
+  var opts = options || {};
+  var defaults = exports.defaults;
+
+  // Apply default value for unspecified options
+  var expires  = opts.expires  || defaults.expires;
+  var domain   = opts.domain   || defaults.domain;
+  var path     = opts.path     !== undefined ? opts.path     : (defaults.path !== undefined ? defaults.path : '/');
+  var secure   = opts.secure   !== undefined ? opts.secure   : defaults.secure;
+  var httponly = opts.httponly !== undefined ? opts.httponly : defaults.httponly;
+
+  // Determine cookie expiration date
+  // If succesful the result will be a valid Date, otherwise it will be an invalid Date or false(ish)
+  var expDate = expires ? new Date(
+      // in case expires is an integer, it should specify the number of days till the cookie expires
+      typeof expires === 'number' ? new Date().getTime() + (expires * 864e5) :
+      // else expires should be either a Date object or in a format recognized by Date.parse()
+      expires
+  ) : '';
+
+  // Set cookie
+  document.cookie = name.replace(/[^+#$&^`|]/g, encodeURIComponent)                // Encode cookie name
+  .replace('(', '%28')
+  .replace(')', '%29') +
+  '=' + value.replace(/[^+#$&/:<-\[\]-}]/g, encodeURIComponent) +                  // Encode cookie value (RFC6265)
+  (expDate && expDate.getTime() >= 0 ? ';expires=' + expDate.toUTCString() : '') + // Add expiration date
+  (domain   ? ';domain=' + domain : '') +                                          // Add domain
+  (path     ? ';path='   + path   : '') +                                          // Add path
+  (secure   ? ';secure'           : '') +                                          // Add secure option
+  (httponly ? ';httponly'         : '');                                           // Add httponly option
+};
+
+exports.get = function(name) {
+  var cookies = document.cookie.split(';');
+
+  // Iterate all cookies
+  for(var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i];
+    var cookieLength = cookie.length;
+
+    // Determine separator index ("name=value")
+    var separatorIndex = cookie.indexOf('=');
+
+    // IE<11 emits the equal sign when the cookie value is empty
+    separatorIndex = separatorIndex < 0 ? cookieLength : separatorIndex;
+
+    var cookie_name = decodeURIComponent(cookie.substring(0, separatorIndex).replace(/^\s+/, ''));
+
+    // Return cookie value if the name matches
+    if (cookie_name === name) {
+      return decodeURIComponent(cookie.substring(separatorIndex + 1, cookieLength));
+    }
+  }
+
+  // Return `null` as the cookie was not found
+  return null;
+};
+
+exports.erase = function(name, options) {
+  exports.set(name, '', {
+    expires:  -1,
+    domain:   options && options.domain,
+    path:     options && options.path,
+    secure:   0,
+    httponly: 0}
+  );
+};
+
+exports.all = function() {
+  var all = {};
+  var cookies = document.cookie.split(';');
+
+  // Iterate all cookies
+  for(var i = 0; i < cookies.length; i++) {
+	  var cookie = cookies[i];
+    var cookieLength = cookie.length;
+
+	  // Determine separator index ("name=value")
+	  var separatorIndex = cookie.indexOf('=');
+
+	  // IE<11 emits the equal sign when the cookie value is empty
+	  separatorIndex = separatorIndex < 0 ? cookieLength : separatorIndex;
+
+    // add the cookie name and value to the `all` object
+	  var cookie_name = decodeURIComponent(cookie.substring(0, separatorIndex).replace(/^\s+/, ''));
+	  all[cookie_name] = decodeURIComponent(cookie.substring(separatorIndex + 1, cookieLength));
+	}
+
+  return all;
+};
+
+},{}],9:[function(require,module,exports){
+(function (process){
 /*!
  * EventEmitter2
  * https://github.com/hij1nx/EventEmitter2
@@ -1538,7 +1634,8 @@ module.exports = url;
       this._conf = conf;
 
       conf.delimiter && (this.delimiter = conf.delimiter);
-      this._events.maxListeners = conf.maxListeners !== undefined ? conf.maxListeners : defaultMaxListeners;
+      this._maxListeners = conf.maxListeners !== undefined ? conf.maxListeners : defaultMaxListeners;
+
       conf.wildcard && (this.wildcard = conf.wildcard);
       conf.newListener && (this.newListener = conf.newListener);
       conf.verboseMemoryLeak && (this.verboseMemoryLeak = conf.verboseMemoryLeak);
@@ -1547,24 +1644,31 @@ module.exports = url;
         this.listenerTree = {};
       }
     } else {
-      this._events.maxListeners = defaultMaxListeners;
+      this._maxListeners = defaultMaxListeners;
     }
   }
 
   function logPossibleMemoryLeak(count, eventName) {
     var errorMsg = '(node) warning: possible EventEmitter memory ' +
-        'leak detected. %d listeners added. ' +
+        'leak detected. ' + count + ' listeners added. ' +
         'Use emitter.setMaxListeners() to increase limit.';
 
     if(this.verboseMemoryLeak){
-      errorMsg += ' Event name: %s.';
-      console.error(errorMsg, count, eventName);
-    } else {
-      console.error(errorMsg, count);
+      errorMsg += ' Event name: ' + eventName + '.';
     }
 
-    if (console.trace){
-      console.trace();
+    if(typeof process !== 'undefined' && process.emitWarning){
+      var e = new Error(errorMsg);
+      e.name = 'MaxListenersExceededWarning';
+      e.emitter = this;
+      e.count = count;
+      process.emitWarning(e);
+    } else {
+      console.error(errorMsg);
+
+      if (console.trace){
+        console.trace();
+      }
     }
   }
 
@@ -1725,8 +1829,8 @@ module.exports = url;
 
           if (
             !tree._listeners.warned &&
-            this._events.maxListeners > 0 &&
-            tree._listeners.length > this._events.maxListeners
+            this._maxListeners > 0 &&
+            tree._listeners.length > this._maxListeners
           ) {
             tree._listeners.warned = true;
             logPossibleMemoryLeak.call(this, tree._listeners.length, name);
@@ -1750,8 +1854,7 @@ module.exports = url;
 
   EventEmitter.prototype.setMaxListeners = function(n) {
     if (n !== undefined) {
-      this._events || init.call(this);
-      this._events.maxListeners = n;
+      this._maxListeners = n;
       if (!this._conf) this._conf = {};
       this._conf.maxListeners = n;
     }
@@ -1759,12 +1862,29 @@ module.exports = url;
 
   EventEmitter.prototype.event = '';
 
+
   EventEmitter.prototype.once = function(event, fn) {
-    this.many(event, 1, fn);
+    return this._once(event, fn, false);
+  };
+
+  EventEmitter.prototype.prependOnceListener = function(event, fn) {
+    return this._once(event, fn, true);
+  };
+
+  EventEmitter.prototype._once = function(event, fn, prepend) {
+    this._many(event, 1, fn, prepend);
     return this;
   };
 
   EventEmitter.prototype.many = function(event, ttl, fn) {
+    return this._many(event, ttl, fn, false);
+  }
+
+  EventEmitter.prototype.prependMany = function(event, ttl, fn) {
+    return this._many(event, ttl, fn, true);
+  }
+
+  EventEmitter.prototype._many = function(event, ttl, fn, prepend) {
     var self = this;
 
     if (typeof fn !== 'function') {
@@ -1775,12 +1895,12 @@ module.exports = url;
       if (--ttl === 0) {
         self.off(event, listener);
       }
-      fn.apply(this, arguments);
+      return fn.apply(this, arguments);
     }
 
     listener._origin = fn;
 
-    this.on(event, listener);
+    this._on(event, listener, prepend);
 
     return self;
   };
@@ -1956,6 +2076,7 @@ module.exports = url;
         promises.push(handler.apply(this, args));
       }
     } else if (handler && handler.length) {
+      handler = handler.slice();
       if (al > 3) {
         args = new Array(al - 1);
         for (j = 1; j < al; j++) args[j - 1] = arguments[j];
@@ -1988,8 +2109,45 @@ module.exports = url;
   };
 
   EventEmitter.prototype.on = function(type, listener) {
+    return this._on(type, listener, false);
+  };
+
+  EventEmitter.prototype.prependListener = function(type, listener) {
+    return this._on(type, listener, true);
+  };
+
+  EventEmitter.prototype.onAny = function(fn) {
+    return this._onAny(fn, false);
+  };
+
+  EventEmitter.prototype.prependAny = function(fn) {
+    return this._onAny(fn, true);
+  };
+
+  EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+  EventEmitter.prototype._onAny = function(fn, prepend){
+    if (typeof fn !== 'function') {
+      throw new Error('onAny only accepts instances of Function');
+    }
+
+    if (!this._all) {
+      this._all = [];
+    }
+
+    // Add the function to the event listener collection.
+    if(prepend){
+      this._all.unshift(fn);
+    }else{
+      this._all.push(fn);
+    }
+
+    return this;
+  }
+
+  EventEmitter.prototype._on = function(type, listener, prepend) {
     if (typeof type === 'function') {
-      this.onAny(type);
+      this._onAny(type, listener);
       return this;
     }
 
@@ -2017,14 +2175,18 @@ module.exports = url;
         this._events[type] = [this._events[type]];
       }
 
-      // If we've already got an array, just append.
-      this._events[type].push(listener);
+      // If we've already got an array, just add
+      if(prepend){
+        this._events[type].unshift(listener);
+      }else{
+        this._events[type].push(listener);
+      }
 
       // Check for listener leak
       if (
         !this._events[type].warned &&
-        this._events.maxListeners > 0 &&
-        this._events[type].length > this._events.maxListeners
+        this._maxListeners > 0 &&
+        this._events[type].length > this._maxListeners
       ) {
         this._events[type].warned = true;
         logPossibleMemoryLeak.call(this, this._events[type].length, type);
@@ -2032,23 +2194,7 @@ module.exports = url;
     }
 
     return this;
-  };
-
-  EventEmitter.prototype.onAny = function(fn) {
-    if (typeof fn !== 'function') {
-      throw new Error('onAny only accepts instances of Function');
-    }
-
-    if (!this._all) {
-      this._all = [];
-    }
-
-    // Add the function to the event listener collection.
-    this._all.push(fn);
-    return this;
-  };
-
-  EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+  }
 
   EventEmitter.prototype.off = function(type, listener) {
     if (typeof listener !== 'function') {
@@ -2205,6 +2351,10 @@ module.exports = url;
     return this._events[type];
   };
 
+  EventEmitter.prototype.eventNames = function(){
+    return Object.keys(this._events);
+  }
+
   EventEmitter.prototype.listenerCount = function(type) {
     return this.listeners(type).length;
   };
@@ -2235,7 +2385,8 @@ module.exports = url;
   }
 }();
 
-},{}],9:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"_process":11}],10:[function(require,module,exports){
 (function (global){
 /*! Native Promise Only
     v0.8.1 (c) Kyle Simpson
@@ -2612,7 +2763,193 @@ module.exports = url;
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],12:[function(require,module,exports){
 module.exports = function (obj) {
     if (!obj || typeof obj !== 'object') return obj;
     
@@ -2649,7 +2986,7 @@ var isArray = Array.isArray || function (xs) {
     return {}.toString.call(xs) === '[object Array]';
 };
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function(self) {
   'use strict';
 
@@ -3111,100 +3448,5 @@ var isArray = Array.isArray || function (xs) {
   }
   self.fetch.polyfill = true
 })(typeof self !== 'undefined' ? self : this);
-
-},{}],12:[function(require,module,exports){
-exports.defaults = {};
-
-exports.set = function(name, value, options) {
-  // Retrieve options and defaults
-  var opts = options || {};
-  var defaults = exports.defaults;
-
-  // Apply default value for unspecified options
-  var expires  = opts.expires  || defaults.expires;
-  var domain   = opts.domain   || defaults.domain;
-  var path     = opts.path     !== undefined ? opts.path     : (defaults.path !== undefined ? defaults.path : '/');
-  var secure   = opts.secure   !== undefined ? opts.secure   : defaults.secure;
-  var httponly = opts.httponly !== undefined ? opts.httponly : defaults.httponly;
-
-  // Determine cookie expiration date
-  // If succesful the result will be a valid Date, otherwise it will be an invalid Date or false(ish)
-  var expDate = expires ? new Date(
-      // in case expires is an integer, it should specify the number of days till the cookie expires
-      typeof expires === 'number' ? new Date().getTime() + (expires * 864e5) :
-      // else expires should be either a Date object or in a format recognized by Date.parse()
-      expires
-  ) : '';
-
-  // Set cookie
-  document.cookie = name.replace(/[^+#$&^`|]/g, encodeURIComponent)                // Encode cookie name
-  .replace('(', '%28')
-  .replace(')', '%29') +
-  '=' + value.replace(/[^+#$&/:<-\[\]-}]/g, encodeURIComponent) +                  // Encode cookie value (RFC6265)
-  (expDate && expDate.getTime() >= 0 ? ';expires=' + expDate.toUTCString() : '') + // Add expiration date
-  (domain   ? ';domain=' + domain : '') +                                          // Add domain
-  (path     ? ';path='   + path   : '') +                                          // Add path
-  (secure   ? ';secure'           : '') +                                          // Add secure option
-  (httponly ? ';httponly'         : '');                                           // Add httponly option
-};
-
-exports.get = function(name) {
-  var cookies = document.cookie.split(';');
-
-  // Iterate all cookies
-  for(var i = 0; i < cookies.length; i++) {
-    var cookie = cookies[i];
-    var cookieLength = cookie.length;
-
-    // Determine separator index ("name=value")
-    var separatorIndex = cookie.indexOf('=');
-
-    // IE<11 emits the equal sign when the cookie value is empty
-    separatorIndex = separatorIndex < 0 ? cookieLength : separatorIndex;
-
-    var cookie_name = decodeURIComponent(cookie.substring(0, separatorIndex).replace(/^\s+/, ''));
-
-    // Return cookie value if the name matches
-    if (cookie_name === name) {
-      return decodeURIComponent(cookie.substring(separatorIndex + 1, cookieLength));
-    }
-  }
-
-  // Return `null` as the cookie was not found
-  return null;
-};
-
-exports.erase = function(name, options) {
-  exports.set(name, '', {
-    expires:  -1,
-    domain:   options && options.domain,
-    path:     options && options.path,
-    secure:   0,
-    httponly: 0}
-  );
-};
-
-exports.all = function() {
-  var all = {};
-  var cookies = document.cookie.split(';');
-
-  // Iterate all cookies
-  for(var i = 0; i < cookies.length; i++) {
-	  var cookie = cookies[i];
-    var cookieLength = cookie.length;
-
-	  // Determine separator index ("name=value")
-	  var separatorIndex = cookie.indexOf('=');
-
-	  // IE<11 emits the equal sign when the cookie value is empty
-	  separatorIndex = separatorIndex < 0 ? cookieLength : separatorIndex;
-
-    // add the cookie name and value to the `all` object
-	  var cookie_name = decodeURIComponent(cookie.substring(0, separatorIndex).replace(/^\s+/, ''));
-	  all[cookie_name] = decodeURIComponent(cookie.substring(separatorIndex + 1, cookieLength));
-	}
-
-  return all;
-};
 
 },{}]},{},[1]);
