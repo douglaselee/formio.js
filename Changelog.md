@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [UNRELEASED]
+
+## 2.22.0
+### Fixed
+ - Fixed an issue where the token-cookie fallback was not returning the token
+ - Forms not recusing properly in eachComponent function.
+
+### Added
+ - A new hook system that allows to easily create hooks within the renderer.
+ - 'beforeSubmit' hook to configuration.
+ - 'input' hook to call when new inputs are added.
+ - Display custom validation error message. 
+ - Ability to inject form data into the error messages.
+
 ## 2.21.3
 ### Added
  - A more robust way to determine if the form is completely loaded and ready.
