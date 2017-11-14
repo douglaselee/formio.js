@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [UNRELEASED]
+### Added
+ - Custom data source to Select component.
 
 ## 2.22.0
 ### Fixed
@@ -12,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - Forms not recusing properly in eachComponent function.
 
 ### Added
+ - Possibility to add shortcuts.
  - A new hook system that allows to easily create hooks within the renderer.
  - 'beforeSubmit' hook to configuration.
  - 'input' hook to call when new inputs are added.
