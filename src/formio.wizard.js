@@ -234,6 +234,12 @@ export class FormioWizard extends FormioForm {
       return;
     }
 
+    // Check for and initlize breadcrumb settings object
+    this.options.breadcrumbSettings = this.options.breadcrumbSettings || {};
+    if(this.options.breadcrumbSettings.clickable === undefined) {
+      this.options.breadcrumbSettings.clickable = true;
+    }
+
     this.wizardHeader = this.ce('ul', {
       class: 'pagination'
     });
@@ -248,13 +254,17 @@ export class FormioWizard extends FormioForm {
         return;
       }
 
+      // Set clickable based on breadcrumb settings
+      let clickable = this.page !== i && this.options.breadcrumbSettings.clickable
+
       let pageButton = this.ce('li', {
-        class: (i === this.page) ? 'active' : '',
-        style: (i === this.page) ? '' : 'cursor: pointer;'
+        class: (i === this.page) ? 'active' : (clickable ? '' : 'disabled'),
+        style: (clickable) ? 'cursor: pointer;' : ''
       });
 
       // Navigate to the page as they click on it.
-      if (this.page !== i) {
+
+      if (clickable) {
         this.addEventListener(pageButton, 'click', (event) => {
           event.preventDefault();
           this.setPage(i);
@@ -356,13 +366,25 @@ export class FormioWizard extends FormioForm {
       }
       let buttonWrapper = this.ce('li');
       let buttonProp = button.name + 'Button';
-      this[buttonProp] = this.ce('button', {
+      let buttonElement = this[buttonProp] = this.ce('button', {
         class: button.class + ' btn-wizard-nav-' + button.name
       });
-      this[buttonProp].appendChild(this.text(this.t(button.name)));
+      buttonElement.appendChild(this.text(this.t(button.name)));
       this.addEventListener(this[buttonProp], 'click', (event) => {
         event.preventDefault();
-        this[button.method]();
+
+        // Disable the button until done.
+        buttonElement.setAttribute('disabled', 'disabled');
+        this.setLoading(buttonElement, true);
+
+        // Call the button method, then re-enable the button.
+        this[button.method]().then(() => {
+          buttonElement.removeAttribute('disabled');
+          this.setLoading(buttonElement, false);
+        }).catch(() => {
+          buttonElement.removeAttribute('disabled');
+          this.setLoading(buttonElement, false);
+        });
       });
       buttonWrapper.appendChild(this[buttonProp]);
       this.wizardNav.appendChild(buttonWrapper);

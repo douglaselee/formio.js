@@ -743,6 +743,10 @@ export class BaseComponent {
   }
 
   setInputStyles(input) {
+    if (this.labelIsHidden()) {
+      return;
+    }
+
     if (this.labelOnTheLeftOrRight(this.component.labelPosition)) {
       const totalLabelWidth = this.getLabelWidth() + this.getLabelMargin();
       input.style.width = `${100 - totalLabelWidth}%`;
@@ -755,16 +759,16 @@ export class BaseComponent {
     }
   }
 
+  labelIsHidden() {
+    return !this.component.label || this.component.hideLabel || this.options.inputsOnly;
+  }
+
   /**
    * Create the HTML element for the label of this component.
    * @param {HTMLElement} container - The containing element that will contain this label.
    */
   createLabel(container) {
-    if (
-      !this.component.label ||
-      this.component.hideLabel ||
-      this.options.inputsOnly
-    ) {
+    if (this.labelIsHidden()) {
       return;
     }
     let className = 'control-label';
@@ -903,7 +907,7 @@ export class BaseComponent {
     this.description = this.ce('div', {
       class: 'help-block'
     });
-    this.description.appendChild(this.text(this.component.description));
+    this.description.innerHTML = this.t(this.component.description);
     container.appendChild(this.description);
   }
 
@@ -1701,16 +1705,40 @@ export class BaseComponent {
     }
 
     this._disabled = disabled;
-    // Disable all input.
-    _each(this.inputs, (input) => {
-      input.disabled = disabled;
-      if (disabled) {
-        input.setAttribute('disabled', 'disabled');
+
+    // Disable all inputs.
+    _each(this.inputs, (input) => this.setDisabled(input, disabled));
+  }
+
+  setDisabled(element, disabled) {
+    element.disabled = disabled;
+    if (disabled) {
+      element.setAttribute('disabled', 'disabled');
+    }
+    else {
+      element.removeAttribute('disabled');
+    }
+  }
+
+  setLoading(element, loading) {
+    if (element.loading === loading) {
+      return;
+    }
+
+    element.loading = loading;
+    if (!element.loader && loading) {
+      element.loader = this.ce('i', {
+        class: 'glyphicon glyphicon-refresh glyphicon-spin button-icon-right'
+      });
+    }
+    if (element.loader) {
+      if (loading) {
+        element.appendChild(element.loader);
       }
-      else {
-        input.removeAttribute('disabled');
+      else if (element.contains(element.loader)) {
+        element.removeChild(element.loader);
       }
-    });
+    }
   }
 
   selectOptions(select, tag, options, defaultValue) {

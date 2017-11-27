@@ -89,9 +89,14 @@ export class SelectComponent extends BaseComponent {
 
     // Iterate through each of the items.
     _each(items, (item) => {
+      // Get the default label from the template
+      var label = this.itemTemplate(item).replace(/<\/?[^>]+(>|$)/g, "")
+
+      // Translate the default template
+      var t_template = this.itemTemplate(item).replace(label, this.t(label));
 
       // Add the choice to the select list.
-      this.choices._addChoice(this.itemValue(item), this.itemTemplate(item));
+      this.choices._addChoice(this.itemValue(item), t_template);
     });
 
     // If a value is provided, then select it.
@@ -115,7 +120,7 @@ export class SelectComponent extends BaseComponent {
     if (method.toUpperCase() === 'GET') {
       body = null;
     }
-    
+
     let query = (this.component.dataSrc === 'url') ? {} : {
       limit: 100,
       skip: 0
@@ -170,7 +175,9 @@ export class SelectComponent extends BaseComponent {
       try {
         _each(this.component.data.headers, (header) => {
           if (header.key) {
-            headers.set(header.key, header.value);
+            headers.set(header.key, this.interpolate(header.value, {
+              data: this.data
+            }));
           }
         });
       }
