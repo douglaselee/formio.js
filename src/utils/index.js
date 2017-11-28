@@ -309,7 +309,7 @@ const FormioUtils = {
    * @param data
    *   The full submission data.
    */
-  checkCalculated(component, submission, data) {
+  checkCalculated(component, submission, data, user) {
     // Process calculated value stuff if present.
     if (component.calculateValue) {
       if (_isString(component.calculateValue)) {
