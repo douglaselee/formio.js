@@ -587,6 +587,7 @@ export class BaseComponent {
   removeValue(index) {
     if (this.data.hasOwnProperty(this.component.key)) {
       this.data[this.component.key].splice(index, 1);
+      this.triggerChange();
     }
     this.buildRows();
   }
@@ -1351,6 +1352,9 @@ export class BaseComponent {
   }
 
   addInputSubmitListener(input) {
+    if (!this.options.submitOnEnter) {
+      return;
+    }
     this.addEventListener(input, 'keypress', (event) => {
       let key = event.keyCode || event.which;
       if (key == 13) {
