@@ -138,6 +138,10 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well">components/well</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/well/Well.js~WellComponent.html">WellComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well-fixtures">components/well/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contrib-stripe-checkout">contrib/stripe/checkout</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/contrib/stripe/checkout/StripeCheckout.js~StripeCheckoutComponent.html">StripeCheckoutComponent</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contrib-stripe-checkout-fixtures">contrib/stripe/checkout/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#utils-jsonlogic">utils/jsonlogic</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lodashOperators">lodashOperators</a></span></span></li>
 </ul>
 </div>
 </nav>
@@ -149,6 +153,7 @@ import _clone from &apos;lodash/clone&apos;;
 import _remove from &apos;lodash/remove&apos;;
 import _assign from &apos;lodash/assign&apos;;
 import Promise from &quot;native-promise-only&quot;;
+import FormioUtils from &apos;../utils/index&apos;;
 import { BaseComponent } from &apos;./base/Base&apos;;
 
 export class FormioComponents extends BaseComponent {
@@ -465,6 +470,10 @@ export class FormioComponents extends BaseComponent {
   }
 
   checkValidity(data, dirty) {
+    if (!FormioUtils.checkCondition(this.component, data, this.data)) {
+      return true;
+    }
+
     let check = super.checkValidity(data, dirty);
     _each(this.getComponents(), (comp) =&gt; {
       check &amp;= comp.checkValidity(data, dirty);
@@ -547,7 +556,7 @@ export class FormioComponents extends BaseComponent {
       else if (value &amp;&amp; value.hasOwnProperty(component.component.key)) {
         changed |= component.setValue(value[component.component.key], flags);
       }
-      else if (component.component.input) {
+      else if (component.hasInput) {
         flags.noValidate = true;
         changed |= component.setValue(null, flags);
       }

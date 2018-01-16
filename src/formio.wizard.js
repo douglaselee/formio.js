@@ -3,6 +3,7 @@ import Promise from "native-promise-only";
 import FormioForm from './formio.form';
 import Formio from './formio';
 import FormioUtils from './utils';
+import _ from 'lodash';
 import each from 'lodash/each';
 import clone from 'lodash/clone';
 import defaults from 'lodash/defaults';
@@ -12,8 +13,8 @@ export class FormioWizard extends FormioForm {
    * @param element Dom element to place this wizard.
    * @param {Object} options Options object, supported options are:
    *    - breadcrumbSettings.clickable: true (default) determines if the breadcrumb bar is clickable or not
-   *    - buttonSettings.show*(Previous, Next, Cancel): true (default) determines if the button is shown or not  
-   */ 
+   *    - buttonSettings.show*(Previous, Next, Cancel): true (default) determines if the button is shown or not
+   */
   constructor(element, options) {
     super(element, options);
     this.wizard = null;
@@ -65,9 +66,10 @@ export class FormioWizard extends FormioForm {
         // Or use JSON Logic.
         else {
           let result = FormioUtils.jsonLogic.apply(form.nextPage, {
-            data: data,
-            page: page,
-            form: form
+            data,
+            page,
+            form,
+            _
           });
           let newPage = parseInt(result, 10);
           if (!isNaN(parseInt(newPage, 10)) && isFinite(newPage)) {
@@ -94,6 +96,15 @@ export class FormioWizard extends FormioForm {
   }
 
   nextPage() {
+    // Read-only forms should not worry about validation before going to next page, nor should they submit.
+    if (this.options.readOnly) {
+      this.history.push(this.page);
+      return this.setPage(this.getNextPage(this.submission.data, this.page)).then(() => {
+        this._nextPage = this.getNextPage(this.submission.data, this.page);
+        this.emit('nextPage', {page: this.page, submission: this.submission});
+      });
+    }
+
     // Validate the form builed, before go to the next page
     if (this.checkValidity(this.submission.data, true)) {
       this.checkData(this.submission.data, {
@@ -119,10 +130,14 @@ export class FormioWizard extends FormioForm {
     });
   }
 
-  cancel() {
-    super.cancel();
-    this.history = [];
-    return this.setPage(0);
+  cancel(noconfirm) {
+    if(super.cancel(noconfirm)) {
+      this.history = [];
+      return this.setPage(0);
+    }
+    else {
+      return this.setPage();
+    }
   }
 
   getPageIndexByKey(key) {
@@ -194,6 +209,10 @@ export class FormioWizard extends FormioForm {
     });
     this.buildWizardHeader();
     this.buildWizardNav();
+  }
+
+  get schema() {
+    return this.wizard;
   }
 
   setForm(form) {

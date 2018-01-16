@@ -138,6 +138,10 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well">components/well</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/well/Well.js~WellComponent.html">WellComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well-fixtures">components/well/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contrib-stripe-checkout">contrib/stripe/checkout</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/contrib/stripe/checkout/StripeCheckout.js~StripeCheckoutComponent.html">StripeCheckoutComponent</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contrib-stripe-checkout-fixtures">contrib/stripe/checkout/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#utils-jsonlogic">utils/jsonlogic</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lodashOperators">lodashOperators</a></span></span></li>
 </ul>
 </div>
 </nav>
@@ -163,10 +167,27 @@ import _isPlainObject from &apos;lodash/isPlainObject&apos;;
 import _forOwn from &apos;lodash/forOwn&apos;;
 import compile from &apos;lodash/template&apos;;
 import jsonLogic from &apos;json-logic-js&apos;;
+import { lodashOperators } from &apos;./jsonlogic/operators&apos;;
 import momentModule from &apos;moment&apos;;
 
 // Configure JsonLogic
-jsonLogic.add_operation(&apos;_&apos;, _);
+lodashOperators.forEach((name) =&gt; jsonLogic.add_operation(`_${name}`, _[name]));
+
+// Retrieve Any Date
+jsonLogic.add_operation(&quot;getDate&quot;, function(date){
+  return momentModule(date).toISOString()
+});
+
+// Set Relative Minimum Date
+jsonLogic.add_operation(&quot;relativeMinDate&quot;, function(relativeMinDate){
+  return momentModule().subtract(relativeMinDate, &quot;days&quot;).toISOString()
+});
+
+// Set Relative Maximum Date
+jsonLogic.add_operation(&quot;relativeMaxDate&quot;, function(relativeMaxDate){
+  return momentModule().add(relativeMaxDate, &quot;days&quot;).toISOString();
+});
+
 
 const FormioUtils = {
   jsonLogic, // Share
@@ -470,7 +491,8 @@ const FormioUtils = {
         try {
           data[component.key] = this.jsonLogic.apply(component.calculateValue, {
             data: submission ? submission.data : data,
-            row: data
+            row: data,
+            _
           });
         }
         catch (e) {
@@ -529,10 +551,19 @@ const FormioUtils = {
       return (value.toString() === cond.eq.toString()) === (cond.show.toString() === &apos;true&apos;);
     }
     else if (component.conditional &amp;&amp; component.conditional.json) {
-      return jsonLogic.apply(component.conditional.json, {
-        data,
-        row
-      });
+      let retVal = true;
+      try {
+        retVal = jsonLogic.apply(component.conditional.json, {
+          data,
+          row,
+          _
+        });
+      }
+      catch (err) {
+        console.warn(`An error occurred in jsonLogic condition for ${component.key}`, err);
+        retVal = true;
+      }
+      return retVal;
     }
 
     // Default to show.
@@ -653,6 +684,17 @@ const FormioUtils = {
   },
   isValidDate(date) {
     return _isDate(date) &amp;&amp; !_isNaN(date.getDate());
+  },
+  getLocaleDateFormatInfo(locale) {
+    const formatInfo = {};
+
+    const day = 21;
+    const exampleDate = new Date(2017, 11, day);
+    const localDateString = exampleDate.toLocaleDateString(locale);
+
+    formatInfo.dayFirst = localDateString.slice(0, 2) === day.toString();
+
+    return formatInfo;
   }
 };
 

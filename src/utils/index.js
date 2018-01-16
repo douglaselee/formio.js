@@ -18,10 +18,27 @@ import _isPlainObject from 'lodash/isPlainObject';
 import _forOwn from 'lodash/forOwn';
 import compile from 'lodash/template';
 import jsonLogic from 'json-logic-js';
+import { lodashOperators } from './jsonlogic/operators';
 import momentModule from 'moment';
 
 // Configure JsonLogic
-jsonLogic.add_operation('_', _);
+lodashOperators.forEach((name) => jsonLogic.add_operation(`_${name}`, _[name]));
+
+// Retrieve Any Date
+jsonLogic.add_operation("getDate", function(date){
+  return momentModule(date).toISOString()
+});
+
+// Set Relative Minimum Date
+jsonLogic.add_operation("relativeMinDate", function(relativeMinDate){
+  return momentModule().subtract(relativeMinDate, "days").toISOString()
+});
+
+// Set Relative Maximum Date
+jsonLogic.add_operation("relativeMaxDate", function(relativeMaxDate){
+  return momentModule().add(relativeMaxDate, "days").toISOString();
+});
+
 
 const FormioUtils = {
   jsonLogic, // Share
@@ -312,10 +329,12 @@ const FormioUtils = {
   checkCalculated(component, submission, data, user) {
     // Process calculated value stuff if present.
     if (component.calculateValue) {
+      let row = rowData;
+      let data = submission ? submission.data : rowData;
       if (_isString(component.calculateValue)) {
         try {
           const util = this;
-          data[component.key] = eval(`(function(data, util) { var value = [];${component.calculateValue.toString()}; return value; })(data, util)`);
+          rowData[component.key] = eval(`(function(data, row, util) { var value = [];${component.calculateValue.toString()}; return value; })(data, row, util)`);
         }
         catch (e) {
           console.warn(`An error occurred calculating a value for ${component.key}`, e);
@@ -323,10 +342,7 @@ const FormioUtils = {
       }
       else {
         try {
-          data[component.key] = this.jsonLogic.apply(component.calculateValue, {
-            data: submission ? submission.data : data,
-            row: data
-          });
+          rowData[component.key] = this.jsonLogic.apply(component.calculateValue, {data, row, _});
         }
         catch (e) {
           console.warn(`An error occurred calculating a value for ${component.key}`, e);
@@ -384,10 +400,19 @@ const FormioUtils = {
       return (value.toString() === cond.eq.toString()) === (cond.show.toString() === 'true');
     }
     else if (component.conditional && component.conditional.json) {
-      return jsonLogic.apply(component.conditional.json, {
-        data,
-        row
-      });
+      let retVal = true;
+      try {
+        retVal = jsonLogic.apply(component.conditional.json, {
+          data,
+          row,
+          _
+        });
+      }
+      catch (err) {
+        console.warn(`An error occurred in jsonLogic condition for ${component.key}`, err);
+        retVal = true;
+      }
+      return retVal;
     }
 
     // Default to show.
@@ -508,6 +533,66 @@ const FormioUtils = {
   },
   isValidDate(date) {
     return _isDate(date) && !_isNaN(date.getDate());
+  },
+  getLocaleDateFormatInfo(locale) {
+    const formatInfo = {};
+
+    const day = 21;
+    const exampleDate = new Date(2017, 11, day);
+    const localDateString = exampleDate.toLocaleDateString(locale);
+
+    formatInfo.dayFirst = localDateString.slice(0, 2) === day.toString();
+
+    return formatInfo;
+  },
+  /**
+   * Convert the format from the angular-datepicker module to flatpickr format.
+   * @param format
+   * @return {string}
+   */
+  convertFormatToFlatpickr(format) {
+    return format
+      // Year conversion.
+      .replace(/y/g, 'Y')
+      .replace('YYYY', 'Y')
+      .replace('YY', 'y')
+
+      // Month conversion.
+      .replace('MMMM', 'F')
+      .replace(/M/g, 'n')
+      .replace('nnn', 'M')
+      .replace('nn', 'm')
+
+      // Day in month.
+      .replace(/d/g, 'j')
+      .replace('jj', 'd')
+
+      // Day in week.
+      .replace('EEEE', 'l')
+      .replace('EEE', 'D')
+
+      // Hours, minutes, seconds
+      .replace('HH', 'H')
+      .replace('hh', 'h')
+      .replace('mm', 'i')
+      .replace('ss', 'S')
+      .replace(/a/g, 'K');
+  },
+  /**
+   * Convert the format from the angular-datepicker module to moment format.
+   * @param format
+   * @return {string}
+   */
+  convertFormatToMoment(format) {
+    return format
+      // Year conversion.
+      .replace(/y/g, 'Y')
+      // Day in month.
+      .replace(/d/g, 'D')
+      // Day in week.
+      .replace(/E/g, 'd')
+      // AM/PM marker
+      .replace(/a/g, 'A');
   }
 };
 

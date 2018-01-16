@@ -4,6 +4,7 @@ import _clone from 'lodash/clone';
 import _remove from 'lodash/remove';
 import _assign from 'lodash/assign';
 import Promise from "native-promise-only";
+import FormioUtils from '../utils/index';
 import { BaseComponent } from './base/Base';
 
 export class FormioComponents extends BaseComponent {
@@ -320,6 +321,10 @@ export class FormioComponents extends BaseComponent {
   }
 
   checkValidity(data, dirty) {
+    if (!FormioUtils.checkCondition(this.component, data, this.data)) {
+      return true;
+    }
+
     let check = super.checkValidity(data, dirty);
     _each(this.getComponents(), (comp) => {
       check &= comp.checkValidity(data, dirty);
@@ -402,7 +407,7 @@ export class FormioComponents extends BaseComponent {
       else if (value && value.hasOwnProperty(component.component.key)) {
         changed |= component.setValue(value[component.component.key], flags);
       }
-      else if (component.component.input) {
+      else if (component.hasInput) {
         flags.noValidate = true;
         changed |= component.setValue(null, flags);
       }

@@ -1,5 +1,6 @@
 import maskInput from 'text-mask-all/vanilla';
 import Promise from "native-promise-only";
+import _ from 'lodash';
 import _get from 'lodash/get';
 import _each from 'lodash/each';
 import _assign from 'lodash/assign';
@@ -9,12 +10,11 @@ import _clone from 'lodash/clone';
 import _defaults from 'lodash/defaults';
 import _isEqual from 'lodash/isEqual';
 import _isUndefined from 'lodash/isUndefined';
-import i18next from 'i18next';
+import _toString from 'lodash/toString';
 import FormioUtils from '../../utils';
 import { Validator } from '../Validator';
 import Tooltip from 'tooltip.js';
-
-i18next.initialized = false;
+import i18next from 'i18next';
 
 /**
  * This is the BaseComponent class which all elements within the FormioForm derive from.
@@ -43,36 +43,8 @@ export class BaseComponent {
       highlightErrors: true
     });
 
-    /**
-     * The i18n configuration for this component.
-     */
-    let i18n = require('../../i18n');
-    if (options && options.i18n && !options.i18nReady) {
-      // Support legacy way of doing translations.
-      if (options.i18n.resources) {
-        i18n = options.i18n;
-      }
-      else {
-        _each(options.i18n, (lang, code) => {
-          if (!i18n.resources[code]) {
-            i18n.resources[code] = {translation: lang};
-          }
-          else {
-            _assign(i18n.resources[code].translation, lang);
-          }
-        });
-      }
-
-      options.i18n = i18n;
-      options.i18nReady = true;
-    }
-
-    if (options && options.i18n) {
-      this.options.i18n = options.i18n;
-    }
-    else {
-      this.options.i18n = i18n;
-    }
+    // Use the i18next that is passed in, otherwise use the global version.
+    this.i18next = this.options.i18next || i18next;
 
     /**
      * Determines if this component has a condition assigned to it.
@@ -223,7 +195,7 @@ export class BaseComponent {
 
     if (this.component) {
       this.type = this.component.type;
-      if (this.component.input && this.component.key) {
+      if (this.hasInput && this.component.key) {
         this.options.name += `[${this.component.key}]`;
       }
 
@@ -235,6 +207,10 @@ export class BaseComponent {
     }
   }
 
+  get hasInput() {
+    return this.component.input || this.inputs.length;
+  }
+
   /**
    * Translate a text using the i18n system.
    *
@@ -243,30 +219,15 @@ export class BaseComponent {
    */
   t(text, params) {
     params = params || {};
+    params.data = this.root ? this.root.data : this.data;
+    params.row = this.data;
     params.component = this.component;
     params.nsSeparator = '::';
     params.keySeparator = '.|.';
     params.pluralSeparator = '._.';
     params.contextSeparator = '._.';
-    return i18next.t(text, params);
-  }
-
-  /**
-   * Sets the language for this form.
-   *
-   * @param lang
-   * @return {*}
-   */
-  set language(lang) {
-    return new Promise((resolve, reject) => {
-      i18next.changeLanguage(lang, (err) => {
-        if (err) {
-          return reject(err);
-        }
-        this.redraw();
-        resolve();
-      });
-    });
+    let translated = this.i18next.t(text, params);
+    return translated || text;
   }
 
   /**
@@ -349,25 +310,6 @@ export class BaseComponent {
   }
 
   /**
-   * Perform the localization initialization.
-   * @returns {*}
-   */
-  localize() {
-    if (i18next.initialized) {
-      return Promise.resolve(i18next);
-    }
-    i18next.initialized = true;
-    return new Promise((resolve, reject) => {
-      i18next.init(this.options.i18n, (err, t) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(i18next);
-      });
-    });
-  }
-
-  /**
    * Called before a next page is triggered allowing the components
    * to perform special functions.
    *
@@ -395,27 +337,103 @@ export class BaseComponent {
    * Builds the component.
    */
   build() {
-    this.createElement();
+    if (this.viewOnlyMode()) {
+      this.viewOnlyBuild();
+    }
+    else {
+      this.createElement();
 
-    const labelAtTheBottom = this.component.labelPosition === 'bottom';
-    if (!labelAtTheBottom) {
-      this.createLabel(this.element);
-    }
-    if (!this.createWrapper()) {
-      this.createInput(this.element);
-    }
-    if (labelAtTheBottom) {
-      this.createLabel(this.element);
-    }
-    this.createDescription(this.element);
+      const labelAtTheBottom = this.component.labelPosition === 'bottom';
+      if (!labelAtTheBottom) {
+        this.createLabel(this.element);
+      }
+      if (!this.createWrapper()) {
+        this.createInput(this.element);
+      }
+      if (labelAtTheBottom) {
+        this.createLabel(this.element);
+      }
+      this.createDescription(this.element);
 
-    // Disable if needed.
-    if (this.shouldDisable) {
-      this.disabled = true;
+      // Disable if needed.
+      if (this.shouldDisable) {
+        this.disabled = true;
+      }
+
+      // Restore the value.
+      this.restoreValue();
+    }
+  }
+
+  viewOnlyMode() {
+    return this.options.readOnly && this.options.viewAsHtml;
+  }
+
+  viewOnlyBuild() {
+    this.createViewOnlyElement();
+    this.createViewOnlyLabel(this.element);
+    this.createViewOnlyInput();
+    this.createViewOnlyValue(this.element);
+  }
+
+  createViewOnlyElement() {
+    this.element = this.ce('dl', {
+      id: this.id
+    });
+
+    if (this.element) {
+      // Ensure you can get the component info from the element.
+      this.element.component = this.component;
     }
 
-    // Restore the value.
-    this.restoreValue();
+    return this.element;
+  }
+
+  createViewOnlyInput() {
+    this.input = this.ce(this.info.type, this.info.attr);
+    this.inputs.push(this.input);
+    return this.input;
+  }
+
+  createViewOnlyLabel(container) {
+    if (this.labelIsHidden()) {
+      return;
+    }
+
+    this.labelElement = this.ce('dt');
+    this.labelElement.appendChild(this.text(this.component.label));
+    this.createTooltip(this.labelElement);
+    container.appendChild(this.labelElement);
+  }
+
+  createViewOnlyValue(container) {
+    this.valueElement = this.ce('dd');
+    this.setupValueElement(this.valueElement);
+    container.appendChild(this.valueElement);
+  }
+
+  setupValueElement(element) {
+    const value = this.text(this.view || this.defaultViewOnlyValue);
+    element.appendChild(value);
+  }
+
+  get defaultViewOnlyValue() {
+    return '-';
+  }
+
+  get view() {
+    return _toString(this.getValue());
+  }
+
+  updateViewOnlyValue() {
+    this.empty(this.valueElement);
+    this.setupValueElement(this.valueElement);
+  }
+
+  empty(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
   }
 
   /**
@@ -423,7 +441,7 @@ export class BaseComponent {
    * @returns {string} - The class name of this component.
    */
   get className() {
-    let className = this.component.input ? 'form-group has-feedback ' : '';
+    let className = this.hasInput ? 'form-group has-feedback ' : '';
     className += `formio-component formio-component-${this.component.type} `;
     if (this.component.key) {
       className += `formio-component-${this.component.key} `;
@@ -431,7 +449,7 @@ export class BaseComponent {
     if (this.component.customClass) {
       className += this.component.customClass;
     }
-    if (this.component.input && this.component.validate && this.component.validate.required) {
+    if (this.hasInput && this.component.validate && this.component.validate.required) {
       className += ' required';
     }
     return className;
@@ -535,7 +553,8 @@ export class BaseComponent {
         try {
           defaultValue = FormioUtils.jsonLogic.apply(this.component.customDefaultValue, {
             data: this.data,
-            row: this.data
+            row: this.data,
+            _
           });
         }
         catch (err) {
@@ -565,7 +584,7 @@ export class BaseComponent {
     if (!this.data[this.component.key]) {
       this.data[this.component.key] = [];
     }
-    if (!_isArray(this.data[this.component.key])) {
+    if (this.data[this.component.key] && !_isArray(this.data[this.component.key])) {
       this.data[this.component.key] = [this.data[this.component.key]];
     }
     this.data[this.component.key].push(this.defaultValue);
@@ -577,6 +596,7 @@ export class BaseComponent {
   addValue() {
     this.addNewValue();
     this.buildRows();
+	  this.checkConditions(this.root ? this.root.data : this.data);
     this.restoreValue();
   }
 
@@ -636,7 +656,7 @@ export class BaseComponent {
    * Adds a new button to add new rows to the multiple input elements.
    * @returns {HTMLElement} - The "Add New" button html element.
    */
-  addButton() {
+  addButton(justIcon) {
     let addButton = this.ce('a', {
       class: 'btn btn-primary'
     });
@@ -648,9 +668,16 @@ export class BaseComponent {
     let addIcon = this.ce('span', {
       class: 'glyphicon glyphicon-plus'
     });
-    addButton.appendChild(addIcon);
-    addButton.appendChild(this.text(this.component.addAnother || ' Add Another'));
-    return addButton;
+
+    if (justIcon) {
+      addButton.appendChild(addIcon);
+      return addButton;
+    }
+    else {
+      addButton.appendChild(addIcon);
+      addButton.appendChild(this.text(this.component.addAnother || ' Add Another'));
+      return addButton;
+    }
   }
 
   /**
@@ -754,7 +781,8 @@ export class BaseComponent {
 
       if (this.labelOnTheLeft(this.component.labelPosition)) {
         input.style.marginLeft = `${totalLabelWidth}%`
-      } else {
+      }
+      else {
         input.style.marginRight = `${totalLabelWidth}%`
       }
     }
@@ -782,14 +810,16 @@ export class BaseComponent {
     // Determine label styles/classes depending on position.
     if (labelPosition === 'bottom') {
       className += ' control-label--bottom';
-    } else if (labelPosition && labelPosition !== 'top') {
+    }
+    else if (labelPosition && labelPosition !== 'top') {
       const labelWidth = this.getLabelWidth();
       const labelMargin = this.getLabelMargin();
 
       // Label is on the left or right.
       if (this.labelOnTheLeft(labelPosition)) {
         style += `float: left; width: ${labelWidth}%; margin-right: ${labelMargin}%; `;
-      } else if (this.labelOnTheRight(labelPosition)) {
+      }
+      else if (this.labelOnTheRight(labelPosition)) {
         style += `float: right; width: ${labelWidth}%; margin-left: ${labelMargin}%; `;
       }
       if (this.rightAlignedLabel(labelPosition)) {
@@ -797,7 +827,7 @@ export class BaseComponent {
       }
     }
 
-    if (this.component.input && this.component.validate && this.component.validate.required) {
+    if (this.hasInput && this.component.validate && this.component.validate.required) {
       className += ' field-required';
     }
     this.labelElement = this.ce('label', {
@@ -1001,6 +1031,10 @@ export class BaseComponent {
           maskArray.numeric = false;
           maskArray.push(/[a-zA-Z]/);
           break;
+        case 'a':
+          maskArray.numeric = false;
+          maskArray.push(/[a-z]/);
+          break;
         case '*':
           maskArray.numeric = false;
           maskArray.push(/[a-zA-Z0-9]/);
@@ -1075,7 +1109,8 @@ export class BaseComponent {
     this.eventHandlers.push({type: evt, func: func});
     if ('addEventListener' in obj){
       obj.addEventListener(evt, func, false);
-    } else if ('attachEvent' in obj) {
+    }
+    else if ('attachEvent' in obj) {
       obj.attachEvent(`on${evt}`, func);
     }
   }
@@ -1402,7 +1437,7 @@ export class BaseComponent {
   }
 
   getValue() {
-    if (!this.component.input) {
+    if (!this.hasInput) {
       return;
     }
     const values = [];
@@ -1436,6 +1471,10 @@ export class BaseComponent {
    * @param flags
    */
   updateValue(flags) {
+    if (!this.hasInput) {
+      return false;
+    }
+
     flags = flags || {};
     const value = this.data[this.component.key];
     this.data[this.component.key] = this.getValue(flags);
@@ -1443,6 +1482,10 @@ export class BaseComponent {
     delete flags.changed;
     if (!flags.noUpdateEvent && changed) {
       this.triggerChange(flags);
+
+      if (this.viewOnlyMode()) {
+        this.updateViewOnlyValue();
+      }
     }
     return changed;
   }
@@ -1501,8 +1544,9 @@ export class BaseComponent {
     else {
       try {
         let val = FormioUtils.jsonLogic.apply(this.component.calculateValue, {
-          data: data,
-          row: this.data
+          data,
+          row: this.data,
+          _
         });
         changed = this.setValue(val, flags);
       }
@@ -1554,7 +1598,7 @@ export class BaseComponent {
    */
   invalidMessage(data, dirty) {
     // No need to check for errors if there is no input or if it is pristine.
-    if (!this.component.input || (!dirty && this.pristine)) {
+    if (!this.hasInput || (!dirty && this.pristine)) {
       return '';
     }
 
@@ -1573,6 +1617,11 @@ export class BaseComponent {
   }
 
   checkValidity(data, dirty) {
+    // Force valid if component is conditionally hidden.
+    if (!FormioUtils.checkCondition(this.component, data, this.data)) {
+      return true;
+    }
+
     let message = this.invalid || this.invalidMessage(data, dirty);
     this.setCustomValidity(message, dirty);
     return message ? false : true;
@@ -1668,10 +1717,14 @@ export class BaseComponent {
    */
   setValue(value, flags) {
     flags = this.getFlags.apply(this, arguments);
-    if (!this.component.input) {
+    if (!this.hasInput) {
       return false;
     }
+    if (this.component.multiple && !_isArray(value)) {
+      value = [value];
+    }
     this.value = value;
+    this.buildRows();
     const isArray = _isArray(value);
     for (let i in this.inputs) {
       if (this.inputs.hasOwnProperty(i)) {
@@ -1816,7 +1869,7 @@ export class BaseComponent {
       name: this.options.name,
       type: this.component.inputType || 'text',
       class: 'form-control',
-      lang: this.options.i18n.lng
+      lang: this.options.language
   };
 
     if (this.component.placeholder) {
