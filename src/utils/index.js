@@ -326,7 +326,7 @@ const FormioUtils = {
    * @param data
    *   The full submission data.
    */
-  checkCalculated(component, submission, data, user) {
+  checkCalculated(component, submission, rowData, user) {
     // Process calculated value stuff if present.
     if (component.calculateValue) {
       let row = rowData;
