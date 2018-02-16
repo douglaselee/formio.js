@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -726,26 +726,35 @@ var BaseComponent = function () {
   }, {
     key: 'setupValueElement',
     value: function setupValueElement(element) {
-      var value = this.value;
+      var value = this.getValue();
       value = this.isEmpty(value) ? this.defaultViewOnlyValue : this.getView(value);
-      element.appendChild(this.text(value));
+      element.innerHTML = value;
     }
   }, {
     key: 'getView',
     value: function getView(value) {
-      return _lodash2.default.toString(value);
+      if (Array.isArray(value)) {
+        return value.join(', ');
+      }
+
+      return value.toString();
     }
   }, {
     key: 'updateViewOnlyValue',
     value: function updateViewOnlyValue() {
-      this.empty(this.valueElement);
+      if (!this.valueElement) {
+        return;
+      }
+
       this.setupValueElement(this.valueElement);
     }
   }, {
     key: 'empty',
     value: function empty(element) {
-      while (element.firstChild) {
-        element.removeChild(element.firstChild);
+      if (element) {
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
       }
     }
 
@@ -1736,42 +1745,54 @@ var BaseComponent = function () {
   }, {
     key: 'show',
     value: function show(_show) {
-      var _this9 = this;
-
-      // Ensure we stop any pending data clears.
-      if (this.clearPending) {
-        clearTimeout(this.clearPending);
-        this.clearPending = null;
-      }
-
       // Execute only if visibility changes.
       if (!_show === !this._visible) {
         return _show;
       }
 
       this._visible = _show;
+      this.showElement(_show && !this.component.hidden);
+      this.clearOnHide(_show);
+      return _show;
+    }
+
+    /**
+     * Show or hide the root element of this component.
+     *
+     * @param show
+     */
+
+  }, {
+    key: 'showElement',
+    value: function showElement(show) {
       var element = this.getElement();
       if (element) {
-        if (_show && !this.component.hidden) {
+        if (show) {
           element.removeAttribute('hidden');
           element.style.visibility = 'visible';
           element.style.position = 'relative';
-        } else if (!_show || this.component.hidden) {
+        } else {
           element.setAttribute('hidden', true);
           element.style.visibility = 'hidden';
           element.style.position = 'absolute';
         }
       }
-
-      if (!_show && this.component.clearOnHide) {
-        this.clearPending = setTimeout(function () {
-          return _this9.setValue(null, {
-            noValidate: true
+      return show;
+    }
+  }, {
+    key: 'clearOnHide',
+    value: function clearOnHide(show) {
+      // clearOnHide defaults to true for old forms (without the value set) so only trigger if the value is false.
+      if (this.component.clearOnHide !== false) {
+        if (!show) {
+          delete this.data[this.component.key];
+        } else if (!this.data || !this.data.hasOwnProperty(this.component.key)) {
+          // If shown, ensure the default is set.
+          this.setValue(this.defaultValue, {
+            noUpdateEvent: true
           });
-        }, 200);
+        }
       }
-
-      return _show;
     }
   }, {
     key: 'onResize',
@@ -1824,7 +1845,7 @@ var BaseComponent = function () {
   }, {
     key: 'addInputSubmitListener',
     value: function addInputSubmitListener(input) {
-      var _this10 = this;
+      var _this9 = this;
 
       if (!this.options.submitOnEnter) {
         return;
@@ -1834,7 +1855,7 @@ var BaseComponent = function () {
         if (key === 13) {
           event.preventDefault();
           event.stopPropagation();
-          _this10.emit('submitButton');
+          _this9.emit('submitButton');
         }
       });
     }
@@ -1848,10 +1869,10 @@ var BaseComponent = function () {
   }, {
     key: 'addInputEventListener',
     value: function addInputEventListener(input) {
-      var _this11 = this;
+      var _this10 = this;
 
       this.addEventListener(input, this.info.changeEvent, function () {
-        return _this11.updateValue({ changed: true });
+        return _this10.updateValue({ changed: true });
       });
     }
 
@@ -2122,19 +2143,15 @@ var BaseComponent = function () {
   }, {
     key: 'setCustomValidity',
     value: function setCustomValidity(message, dirty) {
-      var _this12 = this;
+      var _this11 = this;
 
       if (this.errorElement && this.errorContainer) {
         this.errorElement.innerHTML = '';
-        try {
-          this.errorContainer.removeChild(this.errorElement);
-        } catch (err) {
-          // ingnore
-        }
+        this.removeChildFrom(this.errorElement, this.errorContainer);
       }
       this.removeClass(this.element, 'has-error');
       this.inputs.forEach(function (input) {
-        return _this12.removeClass(input, 'is-invalid');
+        return _this11.removeClass(input, 'is-invalid');
       });
       if (this.options.highlightErrors) {
         this.removeClass(this.element, 'alert alert-danger');
@@ -2256,16 +2273,16 @@ var BaseComponent = function () {
       }
       if (element.loader) {
         if (loading) {
-          element.appendChild(element.loader);
-        } else if (element.contains(element.loader)) {
-          element.removeChild(element.loader);
+          this.appendTo(element.loader, element);
+        } else {
+          this.removeChildFrom(element.loader, element);
         }
       }
     }
   }, {
     key: 'selectOptions',
     value: function selectOptions(select, tag, options, defaultValue) {
-      var _this13 = this;
+      var _this12 = this;
 
       _lodash2.default.each(options, function (option) {
         var attrs = {
@@ -2274,8 +2291,8 @@ var BaseComponent = function () {
         if (defaultValue !== undefined && option.value === defaultValue) {
           attrs.selected = 'selected';
         }
-        var optionElement = _this13.ce('option', attrs);
-        optionElement.appendChild(_this13.text(option.label));
+        var optionElement = _this12.ce('option', attrs);
+        optionElement.appendChild(_this12.text(option.label));
         select.appendChild(optionElement);
       });
     }
@@ -2301,37 +2318,56 @@ var BaseComponent = function () {
     key: 'clear',
     value: function clear() {
       this.destroy();
-      var element = this.getElement();
-      if (element) {
-        while (element.lastChild) {
-          element.removeChild(element.lastChild);
-        }
+      this.empty(this.getElement());
+    }
+  }, {
+    key: 'appendTo',
+    value: function appendTo(element, container) {
+      if (container) {
+        container.appendChild(element);
       }
     }
   }, {
     key: 'append',
     value: function append(element) {
-      if (this.element) {
-        this.element.appendChild(element);
+      this.appendTo(element, this.element);
+    }
+  }, {
+    key: 'prependTo',
+    value: function prependTo(element, container) {
+      if (container) {
+        if (container.firstChild) {
+          try {
+            container.insertBefore(element, container.firstChild);
+          } catch (err) {
+            console.warn(err);
+            container.appendChild(element);
+          }
+        } else {
+          container.appendChild(element);
+        }
       }
     }
   }, {
     key: 'prepend',
     value: function prepend(element) {
-      if (this.element) {
-        if (this.element.firstChild) {
-          this.element.insertBefore(element, this.element.firstChild);
-        } else {
-          this.element.appendChild(element);
+      this.prependTo(element, this.element);
+    }
+  }, {
+    key: 'removeChildFrom',
+    value: function removeChildFrom(element, container) {
+      if (container && container.contains(element)) {
+        try {
+          container.removeChild(element);
+        } catch (err) {
+          console.warn(err);
         }
       }
     }
   }, {
     key: 'removeChild',
     value: function removeChild(element) {
-      if (this.element) {
-        this.element.removeChild(element);
-      }
+      this.removeChildFrom(element, this.element);
     }
 
     /**
@@ -2529,7 +2565,7 @@ var BaseComponent = function () {
      */
 
     , set: function set(disabled) {
-      var _this14 = this;
+      var _this13 = this;
 
       // Do not allow a component to be disabled if it should be always...
       if (!disabled && this.shouldDisable) {
@@ -2540,7 +2576,7 @@ var BaseComponent = function () {
 
       // Disable all inputs.
       _lodash2.default.each(this.inputs, function (input) {
-        return _this14.setDisabled(input, disabled);
+        return _this13.setDisabled(input, disabled);
       });
     }
   }]);
@@ -2759,15 +2795,26 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
       }
 
       this.clicked = false;
+      this.hasError = false;
       this.createElement();
       this.element.appendChild(this.button = this.ce(this.info.type, this.info.attr));
       this.addShortcut(this.button);
+
       if (this.component.label) {
         this.labelElement = this.text(this.addShortcutToLabel());
         this.button.appendChild(this.labelElement);
         this.createTooltip(this.button, null, this.iconClass('question-sign'));
       }
       if (this.component.action === 'submit') {
+        var errorContainer = this.ce('div', {
+          class: 'has-error'
+        });
+        var error = this.ce('span', {
+          class: 'help-block'
+        });
+        error.appendChild(this.text('Please correct all errors before submitting.'));
+        errorContainer.appendChild(error);
+
         this.on('submitButton', function () {
           _this2.loading = true;
           _this2.disabled = true;
@@ -2778,10 +2825,17 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
         }, true);
         this.on('change', function (value) {
           _this2.loading = false;
-          _this2.disabled = _this2.component.disableOnInvalid && !_this2.root.isValid(value.data, true);
+          var isValid = _this2.root.isValid(value.data, true);
+          _this2.disabled = _this2.component.disableOnInvalid && !isValid;
+          if (isValid && _this2.hasError) {
+            _this2.hasError = false;
+            _this2.removeChild(errorContainer);
+          }
         }, true);
         this.on('error', function () {
           _this2.loading = false;
+          _this2.hasError = true;
+          _this2.append(errorContainer);
         }, true);
       }
 
@@ -2970,6 +3024,11 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
     set: function set(disabled) {
       _set(ButtonComponent.prototype.__proto__ || Object.getPrototypeOf(ButtonComponent.prototype), 'disabled', disabled, this);
       this.setDisabled(this.button, disabled);
+    }
+  }, {
+    key: 'defaultValue',
+    get: function get() {
+      return false;
     }
   }, {
     key: 'className',

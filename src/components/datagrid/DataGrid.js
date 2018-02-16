@@ -21,7 +21,7 @@ export class DataGridComponent extends FormioComponents {
 
   buildTable() {
     if (this.tableElement) {
-      this.element.removeChild(this.tableElement);
+      this.removeChild(this.tableElement);
       this.tableElement.innerHTML = '';
     }
 
@@ -88,16 +88,19 @@ export class DataGridComponent extends FormioComponents {
       this.component.addAnotherPosition === 'bottom' ||
       this.component.addAnotherPosition === 'both'
     ))  ?
-      this.ce('tr', null,
-        this.ce('td', {colspan: (this.component.components.length + 1)},
-          this.addButton()
+      this.ce('tfoot', null,
+        this.ce('tr', null,
+          this.ce('td', {colspan: (this.component.components.length + 1)},
+            this.addButton()
+          )
         )
       )
       : null;
   }
 
   get defaultValue() {
-    return {};
+    const value = super.defaultValue;
+    return typeof value === 'object' ? value : {};
   }
 
   buildRows(data) {
@@ -108,7 +111,10 @@ export class DataGridComponent extends FormioComponents {
         this.tbody.insertBefore(this.tableRows[rowIndex], this.tbody.children[rowIndex + 1]);
       }
       // Update existing
-      else if (!_.isEqual(row, this.tableRows[rowIndex].data)) {
+      else if (
+        !_.isEqual(row, this.tableRows[rowIndex].data) ||
+        !_.isEqual(this.visibleColumns, this.tableRows[rowIndex].visibleColumns)
+      ) {
         this.removeRowComponents(rowIndex);
         const newRow = this.buildRow(row, rowIndex, data);
         this.tbody.replaceChild(newRow, this.tableRows[rowIndex]);
@@ -117,7 +123,7 @@ export class DataGridComponent extends FormioComponents {
     });
     // Remove any extra rows.
     for (let rowIndex = this.tableRows.length; rowIndex > this.data[this.component.key].length; rowIndex--) {
-      this.tbody.removeChild(this.tableRows[rowIndex - 1]);
+      this.removeChildFrom(this.tableRows[rowIndex - 1], this.tbody);
       this.tableRows.splice(rowIndex - 1, 1);
     }
   }
@@ -131,15 +137,16 @@ export class DataGridComponent extends FormioComponents {
       ]
     );
     element.data = _.cloneDeep(row);
+    element.visibleColumns = _.cloneDeep(this.visibleColumns);
     return element;
   }
 
   removeRowComponents(rowIndex) {
     // Clean up components list.
     (Object.keys(this.rows[rowIndex])).forEach(key => {
-      this.removeComponent(this.rows[rowIndex][key], this.components);
+      this.removeComponent(this.rows[rowIndex][key], this.rows[rowIndex][key].element);
     });
-    this.rows[rowIndex] = [];
+    delete this.rows[rowIndex];
   }
 
   buildComponent(col, colIndex, row, rowIndex) {
@@ -163,6 +170,10 @@ export class DataGridComponent extends FormioComponents {
 
   checkConditions(data) {
     let show = super.checkConditions(data);
+    // If table isn't visible, don't bother calculating columns.
+    if (!show) {
+      return false;
+    }
     let rebuild = false;
     if (this.visibleColumns === true) {
       this.visibleColumns = {};
@@ -184,8 +195,8 @@ export class DataGridComponent extends FormioComponents {
     });
 
     // If a rebuild is needed, then rebuild the table.
-    if (rebuild && show) {
-      this.buildTable();
+    if (rebuild) {
+      this.buildRows();
     }
 
     // Return if this table should show.
@@ -198,7 +209,12 @@ export class DataGridComponent extends FormioComponents {
       return;
     }
     if (!Array.isArray(value)) {
-      return;
+      if (typeof value === 'object') {
+        value = [value];
+      }
+      else {
+        return;
+      }
     }
 
     this.data[this.component.key] = value;
@@ -213,6 +229,10 @@ export class DataGridComponent extends FormioComponents {
         }
         else if (value[index].hasOwnProperty(key)) {
           col.setValue(value[index][key], flags);
+        }
+        else {
+          col.data = value[index];
+          col.setValue(col.defaultValue, flags);
         }
       });
     });

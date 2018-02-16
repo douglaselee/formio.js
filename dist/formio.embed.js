@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -240,7 +240,7 @@ var FormioComponents = exports.FormioComponents = function (_BaseComponent) {
       component.destroy();
       var element = component.getElement();
       if (element && element.parentNode) {
-        element.parentNode.removeChild(element);
+        this.removeChildFrom(element, element.parentNode);
       }
       _lodash2.default.remove(components, { id: component.id });
     }
@@ -375,22 +375,18 @@ var FormioComponents = exports.FormioComponents = function (_BaseComponent) {
   }, {
     key: 'checkConditions',
     value: function checkConditions(data) {
-      var forceShow = false;
-      var show = false;
-      _lodash2.default.each(this.getComponents(), function (comp) {
-        var compShow = comp.checkConditions(data);
-        forceShow |= comp.hasCondition() && compShow && comp.component && comp.component.conditional && comp.component.conditional.overrideParent;
-        show |= compShow;
+      this.getComponents().forEach(function (comp) {
+        return comp.checkConditions(data);
       });
-
-      // If any child has conditions set and are visible, then force the show.
-      if (forceShow) {
-        return this.show(true);
-      }
-
-      // Show if it explicitely says so.
-      show |= _get(FormioComponents.prototype.__proto__ || Object.getPrototypeOf(FormioComponents.prototype), 'checkConditions', this).call(this, data);
-      return show;
+      return _get(FormioComponents.prototype.__proto__ || Object.getPrototypeOf(FormioComponents.prototype), 'checkConditions', this).call(this, data);
+    }
+  }, {
+    key: 'clearOnHide',
+    value: function clearOnHide(show) {
+      _get(FormioComponents.prototype.__proto__ || Object.getPrototypeOf(FormioComponents.prototype), 'clearOnHide', this).call(this, show);
+      this.getComponents().forEach(function (component) {
+        return component.clearOnHide(show);
+      });
     }
 
     /**
@@ -527,7 +523,7 @@ var FormioComponents = exports.FormioComponents = function (_BaseComponent) {
       }
       flags = this.getFlags.apply(this, arguments);
       var changed = false;
-      _lodash2.default.each(this.getComponents(), function (component) {
+      this.getComponents().forEach(function (component) {
         if (component.type === 'button') {
           return;
         }
@@ -536,9 +532,9 @@ var FormioComponents = exports.FormioComponents = function (_BaseComponent) {
           changed |= component.setValue(value, flags);
         } else if (value && value.hasOwnProperty(component.component.key)) {
           changed |= component.setValue(value[component.component.key], flags);
-        } else if (component.hasInput) {
+        } else {
           flags.noValidate = true;
-          changed |= component.setValue(null, flags);
+          changed |= component.setValue(component.defaultValue, flags);
         }
       });
       return changed;
@@ -1936,26 +1932,35 @@ var BaseComponent = function () {
   }, {
     key: 'setupValueElement',
     value: function setupValueElement(element) {
-      var value = this.value;
+      var value = this.getValue();
       value = this.isEmpty(value) ? this.defaultViewOnlyValue : this.getView(value);
-      element.appendChild(this.text(value));
+      element.innerHTML = value;
     }
   }, {
     key: 'getView',
     value: function getView(value) {
-      return _lodash2.default.toString(value);
+      if (Array.isArray(value)) {
+        return value.join(', ');
+      }
+
+      return value.toString();
     }
   }, {
     key: 'updateViewOnlyValue',
     value: function updateViewOnlyValue() {
-      this.empty(this.valueElement);
+      if (!this.valueElement) {
+        return;
+      }
+
       this.setupValueElement(this.valueElement);
     }
   }, {
     key: 'empty',
     value: function empty(element) {
-      while (element.firstChild) {
-        element.removeChild(element.firstChild);
+      if (element) {
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
       }
     }
 
@@ -2946,42 +2951,54 @@ var BaseComponent = function () {
   }, {
     key: 'show',
     value: function show(_show) {
-      var _this9 = this;
-
-      // Ensure we stop any pending data clears.
-      if (this.clearPending) {
-        clearTimeout(this.clearPending);
-        this.clearPending = null;
-      }
-
       // Execute only if visibility changes.
       if (!_show === !this._visible) {
         return _show;
       }
 
       this._visible = _show;
+      this.showElement(_show && !this.component.hidden);
+      this.clearOnHide(_show);
+      return _show;
+    }
+
+    /**
+     * Show or hide the root element of this component.
+     *
+     * @param show
+     */
+
+  }, {
+    key: 'showElement',
+    value: function showElement(show) {
       var element = this.getElement();
       if (element) {
-        if (_show && !this.component.hidden) {
+        if (show) {
           element.removeAttribute('hidden');
           element.style.visibility = 'visible';
           element.style.position = 'relative';
-        } else if (!_show || this.component.hidden) {
+        } else {
           element.setAttribute('hidden', true);
           element.style.visibility = 'hidden';
           element.style.position = 'absolute';
         }
       }
-
-      if (!_show && this.component.clearOnHide) {
-        this.clearPending = setTimeout(function () {
-          return _this9.setValue(null, {
-            noValidate: true
+      return show;
+    }
+  }, {
+    key: 'clearOnHide',
+    value: function clearOnHide(show) {
+      // clearOnHide defaults to true for old forms (without the value set) so only trigger if the value is false.
+      if (this.component.clearOnHide !== false) {
+        if (!show) {
+          delete this.data[this.component.key];
+        } else if (!this.data || !this.data.hasOwnProperty(this.component.key)) {
+          // If shown, ensure the default is set.
+          this.setValue(this.defaultValue, {
+            noUpdateEvent: true
           });
-        }, 200);
+        }
       }
-
-      return _show;
     }
   }, {
     key: 'onResize',
@@ -3034,7 +3051,7 @@ var BaseComponent = function () {
   }, {
     key: 'addInputSubmitListener',
     value: function addInputSubmitListener(input) {
-      var _this10 = this;
+      var _this9 = this;
 
       if (!this.options.submitOnEnter) {
         return;
@@ -3044,7 +3061,7 @@ var BaseComponent = function () {
         if (key === 13) {
           event.preventDefault();
           event.stopPropagation();
-          _this10.emit('submitButton');
+          _this9.emit('submitButton');
         }
       });
     }
@@ -3058,10 +3075,10 @@ var BaseComponent = function () {
   }, {
     key: 'addInputEventListener',
     value: function addInputEventListener(input) {
-      var _this11 = this;
+      var _this10 = this;
 
       this.addEventListener(input, this.info.changeEvent, function () {
-        return _this11.updateValue({ changed: true });
+        return _this10.updateValue({ changed: true });
       });
     }
 
@@ -3332,19 +3349,15 @@ var BaseComponent = function () {
   }, {
     key: 'setCustomValidity',
     value: function setCustomValidity(message, dirty) {
-      var _this12 = this;
+      var _this11 = this;
 
       if (this.errorElement && this.errorContainer) {
         this.errorElement.innerHTML = '';
-        try {
-          this.errorContainer.removeChild(this.errorElement);
-        } catch (err) {
-          // ingnore
-        }
+        this.removeChildFrom(this.errorElement, this.errorContainer);
       }
       this.removeClass(this.element, 'has-error');
       this.inputs.forEach(function (input) {
-        return _this12.removeClass(input, 'is-invalid');
+        return _this11.removeClass(input, 'is-invalid');
       });
       if (this.options.highlightErrors) {
         this.removeClass(this.element, 'alert alert-danger');
@@ -3466,16 +3479,16 @@ var BaseComponent = function () {
       }
       if (element.loader) {
         if (loading) {
-          element.appendChild(element.loader);
-        } else if (element.contains(element.loader)) {
-          element.removeChild(element.loader);
+          this.appendTo(element.loader, element);
+        } else {
+          this.removeChildFrom(element.loader, element);
         }
       }
     }
   }, {
     key: 'selectOptions',
     value: function selectOptions(select, tag, options, defaultValue) {
-      var _this13 = this;
+      var _this12 = this;
 
       _lodash2.default.each(options, function (option) {
         var attrs = {
@@ -3484,8 +3497,8 @@ var BaseComponent = function () {
         if (defaultValue !== undefined && option.value === defaultValue) {
           attrs.selected = 'selected';
         }
-        var optionElement = _this13.ce('option', attrs);
-        optionElement.appendChild(_this13.text(option.label));
+        var optionElement = _this12.ce('option', attrs);
+        optionElement.appendChild(_this12.text(option.label));
         select.appendChild(optionElement);
       });
     }
@@ -3511,37 +3524,56 @@ var BaseComponent = function () {
     key: 'clear',
     value: function clear() {
       this.destroy();
-      var element = this.getElement();
-      if (element) {
-        while (element.lastChild) {
-          element.removeChild(element.lastChild);
-        }
+      this.empty(this.getElement());
+    }
+  }, {
+    key: 'appendTo',
+    value: function appendTo(element, container) {
+      if (container) {
+        container.appendChild(element);
       }
     }
   }, {
     key: 'append',
     value: function append(element) {
-      if (this.element) {
-        this.element.appendChild(element);
+      this.appendTo(element, this.element);
+    }
+  }, {
+    key: 'prependTo',
+    value: function prependTo(element, container) {
+      if (container) {
+        if (container.firstChild) {
+          try {
+            container.insertBefore(element, container.firstChild);
+          } catch (err) {
+            console.warn(err);
+            container.appendChild(element);
+          }
+        } else {
+          container.appendChild(element);
+        }
       }
     }
   }, {
     key: 'prepend',
     value: function prepend(element) {
-      if (this.element) {
-        if (this.element.firstChild) {
-          this.element.insertBefore(element, this.element.firstChild);
-        } else {
-          this.element.appendChild(element);
+      this.prependTo(element, this.element);
+    }
+  }, {
+    key: 'removeChildFrom',
+    value: function removeChildFrom(element, container) {
+      if (container && container.contains(element)) {
+        try {
+          container.removeChild(element);
+        } catch (err) {
+          console.warn(err);
         }
       }
     }
   }, {
     key: 'removeChild',
     value: function removeChild(element) {
-      if (this.element) {
-        this.element.removeChild(element);
-      }
+      this.removeChildFrom(element, this.element);
     }
 
     /**
@@ -3739,7 +3771,7 @@ var BaseComponent = function () {
      */
 
     , set: function set(disabled) {
-      var _this14 = this;
+      var _this13 = this;
 
       // Do not allow a component to be disabled if it should be always...
       if (!disabled && this.shouldDisable) {
@@ -3750,7 +3782,7 @@ var BaseComponent = function () {
 
       // Disable all inputs.
       _lodash2.default.each(this.inputs, function (input) {
-        return _this14.setDisabled(input, disabled);
+        return _this13.setDisabled(input, disabled);
       });
     }
   }]);
@@ -3969,15 +4001,26 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
       }
 
       this.clicked = false;
+      this.hasError = false;
       this.createElement();
       this.element.appendChild(this.button = this.ce(this.info.type, this.info.attr));
       this.addShortcut(this.button);
+
       if (this.component.label) {
         this.labelElement = this.text(this.addShortcutToLabel());
         this.button.appendChild(this.labelElement);
         this.createTooltip(this.button, null, this.iconClass('question-sign'));
       }
       if (this.component.action === 'submit') {
+        var errorContainer = this.ce('div', {
+          class: 'has-error'
+        });
+        var error = this.ce('span', {
+          class: 'help-block'
+        });
+        error.appendChild(this.text('Please correct all errors before submitting.'));
+        errorContainer.appendChild(error);
+
         this.on('submitButton', function () {
           _this2.loading = true;
           _this2.disabled = true;
@@ -3988,10 +4031,17 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
         }, true);
         this.on('change', function (value) {
           _this2.loading = false;
-          _this2.disabled = _this2.component.disableOnInvalid && !_this2.root.isValid(value.data, true);
+          var isValid = _this2.root.isValid(value.data, true);
+          _this2.disabled = _this2.component.disableOnInvalid && !isValid;
+          if (isValid && _this2.hasError) {
+            _this2.hasError = false;
+            _this2.removeChild(errorContainer);
+          }
         }, true);
         this.on('error', function () {
           _this2.loading = false;
+          _this2.hasError = true;
+          _this2.append(errorContainer);
         }, true);
       }
 
@@ -4182,6 +4232,11 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
       this.setDisabled(this.button, disabled);
     }
   }, {
+    key: 'defaultValue',
+    get: function get() {
+      return false;
+    }
+  }, {
     key: 'className',
     get: function get() {
       var className = _get(ButtonComponent.prototype.__proto__ || Object.getPrototypeOf(ButtonComponent.prototype), 'className', this);
@@ -4368,7 +4423,7 @@ var CheckBoxComponent = exports.CheckBoxComponent = function (_BaseComponent) {
       }
 
       var className = 'control-label form-check-label';
-      if (this.component.input && this.component.validate && this.component.validate.required) {
+      if (this.component.input && !this.options.inputsOnly && this.component.validate && this.component.validate.required) {
         className += ' field-required';
       }
 
@@ -4636,12 +4691,18 @@ var ColumnsComponent = exports.ColumnsComponent = function (_FormioComponents) {
 },{"../Components":1,"lodash":79}],9:[function(require,module,exports){
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ContainerComponent = undefined;
+
+var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+  return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+};
 
 var _createClass = function () {
   function defineProperties(target, props) {
@@ -4652,6 +4713,22 @@ var _createClass = function () {
     if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
   };
 }();
+
+var _get = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
+    }
+  } else if ("value" in desc) {
+    return desc.value;
+  } else {
+    var getter = desc.get;if (getter === undefined) {
+      return undefined;
+    }return getter.call(receiver);
+  }
+};
 
 var _lodash = require('lodash');
 
@@ -4672,12 +4749,12 @@ function _classCallCheck(instance, Constructor) {
 function _possibleConstructorReturn(self, call) {
   if (!self) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+  }return call && ((typeof call === "undefined" ? "undefined" : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
 }
 
 function _inherits(subClass, superClass) {
   if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
+    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof2(superClass)));
   }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 }
 
@@ -4723,14 +4800,24 @@ var ContainerComponent = exports.ContainerComponent = function (_FormioComponent
       if (!value || !_lodash2.default.isObject(value)) {
         return;
       }
+      this.data[this.component.key] = value;
       _lodash2.default.each(this.components, function (component) {
         if (component.type === 'components') {
           component.setValue(value, flags);
         } else if (value.hasOwnProperty(component.component.key)) {
           component.setValue(value[component.component.key], flags);
+        } else {
+          component.data = value;
+          component.setValue(component.defaultValue, flags);
         }
       });
       this.updateValue(flags);
+    }
+  }, {
+    key: 'defaultValue',
+    get: function get() {
+      var value = _get(ContainerComponent.prototype.__proto__ || Object.getPrototypeOf(ContainerComponent.prototype), 'defaultValue', this);
+      return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' ? value : {};
     }
   }]);
 
@@ -4942,12 +5029,18 @@ var CurrencyComponent = exports.CurrencyComponent = function (_NumberComponent) 
 },{"../number/Number":24,"lodash":79,"text-mask-addons":86,"vanilla-text-mask":88}],12:[function(require,module,exports){
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DataGridComponent = undefined;
+
+var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+  return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+};
 
 var _createClass = function () {
   function defineProperties(target, props) {
@@ -4994,12 +5087,12 @@ function _classCallCheck(instance, Constructor) {
 function _possibleConstructorReturn(self, call) {
   if (!self) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+  }return call && ((typeof call === "undefined" ? "undefined" : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
 }
 
 function _inherits(subClass, superClass) {
   if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
+    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof2(superClass)));
   }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 }
 
@@ -5033,7 +5126,7 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
       var _this2 = this;
 
       if (this.tableElement) {
-        this.element.removeChild(this.tableElement);
+        this.removeChild(this.tableElement);
         this.tableElement.innerHTML = '';
       }
 
@@ -5093,7 +5186,7 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
   }, {
     key: 'createAddButton',
     value: function createAddButton() {
-      return !this.shouldDisable && (!this.component.addAnotherPosition || this.component.addAnotherPosition === 'bottom' || this.component.addAnotherPosition === 'both') ? this.ce('tr', null, this.ce('td', { colspan: this.component.components.length + 1 }, this.addButton())) : null;
+      return !this.shouldDisable && (!this.component.addAnotherPosition || this.component.addAnotherPosition === 'bottom' || this.component.addAnotherPosition === 'both') ? this.ce('tfoot', null, this.ce('tr', null, this.ce('td', { colspan: this.component.components.length + 1 }, this.addButton()))) : null;
     }
   }, {
     key: 'buildRows',
@@ -5107,7 +5200,7 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
           _this4.tbody.insertBefore(_this4.tableRows[rowIndex], _this4.tbody.children[rowIndex + 1]);
         }
         // Update existing
-        else if (!_lodash2.default.isEqual(row, _this4.tableRows[rowIndex].data)) {
+        else if (!_lodash2.default.isEqual(row, _this4.tableRows[rowIndex].data) || !_lodash2.default.isEqual(_this4.visibleColumns, _this4.tableRows[rowIndex].visibleColumns)) {
             _this4.removeRowComponents(rowIndex);
             var newRow = _this4.buildRow(row, rowIndex, data);
             _this4.tbody.replaceChild(newRow, _this4.tableRows[rowIndex]);
@@ -5116,7 +5209,7 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
       });
       // Remove any extra rows.
       for (var rowIndex = this.tableRows.length; rowIndex > this.data[this.component.key].length; rowIndex--) {
-        this.tbody.removeChild(this.tableRows[rowIndex - 1]);
+        this.removeChildFrom(this.tableRows[rowIndex - 1], this.tbody);
         this.tableRows.splice(rowIndex - 1, 1);
       }
     }
@@ -5130,6 +5223,7 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
         return _this5.buildComponent(col, colIndex, row, index);
       }), !this.shouldDisable ? this.ce('td', null, this.removeButton(index)) : null]);
       element.data = _lodash2.default.cloneDeep(row);
+      element.visibleColumns = _lodash2.default.cloneDeep(this.visibleColumns);
       return element;
     }
   }, {
@@ -5139,9 +5233,9 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
 
       // Clean up components list.
       Object.keys(this.rows[rowIndex]).forEach(function (key) {
-        _this6.removeComponent(_this6.rows[rowIndex][key], _this6.components);
+        _this6.removeComponent(_this6.rows[rowIndex][key], _this6.rows[rowIndex][key].element);
       });
-      this.rows[rowIndex] = [];
+      delete this.rows[rowIndex];
     }
   }, {
     key: 'buildComponent',
@@ -5168,6 +5262,10 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
       var _this7 = this;
 
       var show = _get(DataGridComponent.prototype.__proto__ || Object.getPrototypeOf(DataGridComponent.prototype), 'checkConditions', this).call(this, data);
+      // If table isn't visible, don't bother calculating columns.
+      if (!show) {
+        return false;
+      }
       var rebuild = false;
       if (this.visibleColumns === true) {
         this.visibleColumns = {};
@@ -5186,8 +5284,8 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
       });
 
       // If a rebuild is needed, then rebuild the table.
-      if (rebuild && show) {
-        this.buildTable();
+      if (rebuild) {
+        this.buildRows();
       }
 
       // Return if this table should show.
@@ -5201,7 +5299,11 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
         return;
       }
       if (!Array.isArray(value)) {
-        return;
+        if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
+          value = [value];
+        } else {
+          return;
+        }
       }
 
       this.data[this.component.key] = value;
@@ -5215,6 +5317,9 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
             col.setValue(value[index], flags);
           } else if (value[index].hasOwnProperty(key)) {
             col.setValue(value[index][key], flags);
+          } else {
+            col.data = value[index];
+            col.setValue(col.defaultValue, flags);
           }
         });
       });
@@ -5247,7 +5352,8 @@ var DataGridComponent = exports.DataGridComponent = function (_FormioComponents)
   }, {
     key: 'defaultValue',
     get: function get() {
-      return {};
+      var value = _get(DataGridComponent.prototype.__proto__ || Object.getPrototypeOf(DataGridComponent.prototype), 'defaultValue', this);
+      return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' ? value : {};
     }
   }]);
 
@@ -6042,6 +6148,22 @@ var _createClass = function () {
   };
 }();
 
+var _get = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
+    }
+  } else if ("value" in desc) {
+    return desc.value;
+  } else {
+    var getter = desc.get;if (getter === undefined) {
+      return undefined;
+    }return getter.call(receiver);
+  }
+};
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -6291,7 +6413,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       this.removeRowComponents(rowIndex);
       // Remove if new.
       if (!this.rows[rowIndex]) {
-        this.tableElement.removeChild(this.editRows[rowIndex].element);
+        this.removeChildFrom(this.editRows[rowIndex].element, this.tableElement);
         this.editRows.splice(rowIndex, 1);
         this.rows.splice(rowIndex, 1);
       } else {
@@ -6327,7 +6449,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       }
       this.removeRowComponents(rowIndex);
       this.rows.splice(rowIndex, 1);
-      this.tableElement.removeChild(this.editRows[rowIndex].element);
+      this.removeChildFrom(this.editRows[rowIndex].element, this.tableElement);
       this.editRows.splice(rowIndex, 1);
       this.updateValue();
       this.refreshDOM();
@@ -6420,11 +6542,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
     value: function setCustomValidity(message) {
       if (this.errorElement && this.errorContainer) {
         this.errorElement.innerHTML = '';
-        try {
-          this.errorContainer.removeChild(this.errorElement);
-        } catch (err) {
-          // ignore
-        }
+        this.removeChildFrom(this.errorElement, this.errorContainer);
       }
       if (message) {
         this.emit('componentError', this.error);
@@ -6433,7 +6551,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
           class: 'help-block'
         });
         errorMessage.appendChild(this.text(message));
-        this.errorElement.appendChild(errorMessage);
+        this.appendTo(errorMessage, this.errorElement);
       }
     }
   }, {
@@ -6460,6 +6578,14 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
           };
         }
       });
+      // Remove any extra edit rows.
+      if (this.rows.length < this.editRows.length) {
+        for (var rowIndex = this.editRows.length - 1; rowIndex >= this.rows.length; rowIndex--) {
+          this.removeRowComponents(rowIndex);
+          this.removeChildFrom(this.editRows[rowIndex].element, this.tableElement);
+          this.editRows.splice(rowIndex, 1);
+        }
+      }
       this.refreshDOM();
     }
 
@@ -6477,7 +6603,8 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
   }, {
     key: 'defaultValue',
     get: function get() {
-      return [];
+      var value = _get(EditGridComponent.prototype.__proto__ || Object.getPrototypeOf(EditGridComponent.prototype), 'defaultValue', this);
+      return Array.isArray(value) ? value : [];
     }
   }]);
 
@@ -6652,6 +6779,22 @@ var _createClass = function () {
     if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
   };
 }();
+
+var _get = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
+    }
+  } else if ("value" in desc) {
+    return desc.value;
+  } else {
+    var getter = desc.get;if (getter === undefined) {
+      return undefined;
+    }return getter.call(receiver);
+  }
+};
 
 var _Base = require('../base/Base');
 
@@ -6940,7 +7083,7 @@ var FileComponent = exports.FileComponent = function (_BaseComponent) {
       return container = this.ce('div', { class: 'file' + (fileUpload.status === 'error' ? ' has-error' : '') }, [this.ce('div', { class: 'row' }, [this.ce('div', { class: 'fileName control-label col-sm-10' }, [fileUpload.originalName, this.ce('i', {
         class: this.iconClass('remove'),
         onClick: function onClick() {
-          _this8.uploadStatusList.removeChild(container);
+          _this8.removeChildFrom(container, _this8.uploadStatusList);
         }
       })]), this.ce('div', { class: 'fileSize control-label col-sm-2 text-right' }, this.fileSize(fileUpload.size))]), this.ce('div', { class: 'row' }, [this.ce('div', { class: 'col-sm-12' }, [fileUpload.status === 'progress' ? this.ce('div', { class: 'progress' }, this.ce('div', {
         class: 'progress-bar',
@@ -7092,7 +7235,7 @@ var FileComponent = exports.FileComponent = function (_BaseComponent) {
               uploadStatus = _this9.createUploadStatus(fileUpload);
               _this9.uploadStatusList.replaceChild(uploadStatus, originalStatus);
             }, _this9.component.url).then(function (fileInfo) {
-              _this9.uploadStatusList.removeChild(uploadStatus);
+              _this9.removeChildFrom(uploadStatus, _this9.uploadStatusList);
               fileInfo.originalName = file.name;
               _this9.data[_this9.component.key].push(fileInfo);
               _this9.refreshDOM();
@@ -7126,6 +7269,12 @@ var FileComponent = exports.FileComponent = function (_BaseComponent) {
         alert(response);
       });
       event.preventDefault();
+    }
+  }, {
+    key: 'defaultValue',
+    get: function get() {
+      var value = _get(FileComponent.prototype.__proto__ || Object.getPrototypeOf(FileComponent.prototype), 'defaultValue', this);
+      return Array.isArray(value) ? value : [];
     }
   }, {
     key: 'fileService',
@@ -8810,7 +8959,7 @@ var ResourceComponent = exports.ResourceComponent = function (_SelectComponent) 
         form.src = Formio.getBaseUrl() + '/form/' + self.component.resource;
 
         _this2.dialog.onclose = function () {
-          self.dialog.parentElement.removeChild(self.dialog);
+          self.removeChildFrom(self.dialog, self.dialog.parentElement);
         };
 
         _this2.dialog.showModal();
@@ -9104,7 +9253,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
 
       if (!this.choices && this.selectInput) {
         // Detach from DOM and clear input.
-        this.selectContainer.removeChild(this.selectInput);
+        this.removeChildFrom(this.selectInput, this.selectContainer);
         this.selectInput.innerHTML = '';
       }
 
@@ -9127,7 +9276,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         this.choices.setChoices(this.selectOptions, 'value', 'label', true);
       } else {
         // Re-attach select input.
-        this.selectContainer.appendChild(this.selectInput);
+        this.appendTo(this.selectInput, this.selectContainer);
       }
 
       // We are no longer loading.
@@ -9422,7 +9571,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       } else {
         var values = [];
         _lodash2.default.each(this.selectOptions, function (selectOption) {
-          if (selectOption.element.selected) {
+          if (selectOption.element && selectOption.element.selected) {
             values.push(selectOption.value);
           }
         });
@@ -9728,9 +9877,9 @@ var SelectBoxesComponent = exports.SelectBoxesComponent = function (_RadioCompon
   }, {
     key: 'getView',
     value: function getView(value) {
-      return _lodash2.default.flow(_lodash2.default.filter(function (v) {
+      return (0, _lodash2.default)(this.component.values || []).filter(function (v) {
         return value[v.value];
-      }), _lodash2.default.map('label'), _lodash2.default.join(', '))(this.component.values || []);
+      }).map('label').join(', ');
     }
   }]);
 
@@ -10066,60 +10215,64 @@ var SurveyComponent = exports.SurveyComponent = function (_BaseComponent) {
     value: function build() {
       var _this2 = this;
 
-      this.createElement();
-      var labelAtTheBottom = this.component.labelPosition === 'bottom';
-      if (!labelAtTheBottom) {
-        this.createLabel(this.element);
-      }
-      this.table = this.ce('table', {
-        class: 'table table-striped table-bordered'
-      });
-      this.setInputStyles(this.table);
-
-      // Build header.
-      var thead = this.ce('thead');
-      var thr = this.ce('tr');
-      thr.appendChild(this.ce('td'));
-      _lodash2.default.each(this.component.values, function (value) {
-        var th = _this2.ce('th', {
-          style: 'text-align: center;'
+      if (this.viewOnly) {
+        this.viewOnlyBuild();
+      } else {
+        this.createElement();
+        var labelAtTheBottom = this.component.labelPosition === 'bottom';
+        if (!labelAtTheBottom) {
+          this.createLabel(this.element);
+        }
+        this.table = this.ce('table', {
+          class: 'table table-striped table-bordered'
         });
-        th.appendChild(_this2.text(value.label));
-        thr.appendChild(th);
-      });
-      thead.appendChild(thr);
-      this.table.appendChild(thead);
-      // Build the body.
-      var tbody = this.ce('tbody');
-      _lodash2.default.each(this.component.questions, function (question) {
-        var tr = _this2.ce('tr');
-        var td = _this2.ce('td');
-        td.appendChild(_this2.text(question.label));
-        tr.appendChild(td);
-        _lodash2.default.each(_this2.component.values, function (value) {
-          var td = _this2.ce('td', {
+        this.setInputStyles(this.table);
+
+        // Build header.
+        var thead = this.ce('thead');
+        var thr = this.ce('tr');
+        thr.appendChild(this.ce('td'));
+        _lodash2.default.each(this.component.values, function (value) {
+          var th = _this2.ce('th', {
             style: 'text-align: center;'
           });
-          var input = _this2.ce('input', {
-            type: 'radio',
-            name: 'data[' + _this2.component.key + '][' + question.value + ']',
-            value: value.value,
-            id: _this2.id + '-' + question.value + '-' + value.value
-          });
-          _this2.addInput(input, td);
-          tr.appendChild(td);
+          th.appendChild(_this2.text(value.label));
+          thr.appendChild(th);
         });
-        tbody.appendChild(tr);
-      });
-      this.table.appendChild(tbody);
-      this.element.appendChild(this.table);
-      if (labelAtTheBottom) {
-        this.createLabel(this.element);
-      }
-      this.createDescription(this.element);
-      this.restoreValue();
-      if (this.shouldDisable) {
-        this.disabled = true;
+        thead.appendChild(thr);
+        this.table.appendChild(thead);
+        // Build the body.
+        var tbody = this.ce('tbody');
+        _lodash2.default.each(this.component.questions, function (question) {
+          var tr = _this2.ce('tr');
+          var td = _this2.ce('td');
+          td.appendChild(_this2.text(question.label));
+          tr.appendChild(td);
+          _lodash2.default.each(_this2.component.values, function (value) {
+            var td = _this2.ce('td', {
+              style: 'text-align: center;'
+            });
+            var input = _this2.ce('input', {
+              type: 'radio',
+              name: 'data[' + _this2.component.key + '][' + question.value + ']',
+              value: value.value,
+              id: _this2.id + '-' + question.value + '-' + value.value
+            });
+            _this2.addInput(input, td);
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        this.table.appendChild(tbody);
+        this.element.appendChild(this.table);
+        if (labelAtTheBottom) {
+          this.createLabel(this.element);
+        }
+        this.createDescription(this.element);
+        this.restoreValue();
+        if (this.shouldDisable) {
+          this.disabled = true;
+        }
       }
     }
   }, {
@@ -10160,6 +10313,37 @@ var SurveyComponent = exports.SurveyComponent = function (_BaseComponent) {
         });
       });
       return value;
+    }
+  }, {
+    key: 'getView',
+    value: function getView(value) {
+      var _this5 = this;
+
+      var table = this.ce('table', {
+        class: 'table table-striped table-bordered table-condensed'
+      });
+      var tbody = this.ce('tbody');
+
+      _lodash2.default.each(value, function (value, question) {
+        var row = _this5.ce('tr');
+
+        var questionCell = _this5.ce('th');
+        var valueCell = _this5.ce('td');
+
+        var questionText = _lodash2.default.find(_this5.component.questions, ['value', question]).label;
+        var valueText = _lodash2.default.find(_this5.component.values, ['value', value]).label;
+
+        questionCell.appendChild(_this5.text(questionText));
+        valueCell.appendChild(_this5.text(valueText));
+
+        row.appendChild(questionCell);
+        row.appendChild(valueCell);
+
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      return table.outerHTML;
     }
   }]);
 
@@ -10389,6 +10573,7 @@ var TextAreaComponent = exports.TextAreaComponent = function (_TextFieldComponen
       // Lazy load the quill library.
       this.quillReady = _Base.BaseComponent.requireLibrary('quill', 'Quill', 'https://cdn.quilljs.com/1.3.5/quill.min.js', true).then(function () {
         _this2.quill = new Quill(_this2.input, _this2.component.wysiwyg);
+        _this2.quill.root.spellcheck = _this2.component.spellcheck;
 
         /** This block of code adds the [source] capabilities.  See https://codepen.io/anon/pen/ZyEjrQ **/
         var txtArea = document.createElement('textarea');
@@ -11278,8 +11463,6 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'setElement',
     value: function setElement(element) {
-      var _this4 = this;
-
       if (!element) {
         return;
       }
@@ -11287,20 +11470,16 @@ var FormioForm = function (_FormioComponents) {
       if (this.element) {
         this.element.removeEventListener('keydown', this.executeShortcuts.bind(this));
       }
-      element.addEventListener('keydown', this.executeShortcuts.bind(this));
 
-      this.element = element;
+      this.wrapper = element;
+      this.element = this.ce('div');
+      this.wrapper.appendChild(this.element);
+      this.showElement(false);
+      this.element.addEventListener('keydown', this.executeShortcuts.bind(this));
       var classNames = this.element.getAttribute('class');
       classNames += ' formio-form';
-      this.addClass(this.element, classNames);
+      this.addClass(this.wrapper, classNames);
       this.loading = true;
-      this.ready.then(function () {
-        return _this4.loading = false;
-      }, function () {
-        return _this4.loading = false;
-      }).catch(function () {
-        return _this4.loading = false;
-      });
       this.elementResolve(element);
     }
   }, {
@@ -11401,15 +11580,15 @@ var FormioForm = function (_FormioComponents) {
      * Loads the submission if applicable.
      */
     value: function loadSubmission() {
-      var _this5 = this;
+      var _this4 = this;
 
       if (this.formio.submissionId) {
         this.onSubmission = this.formio.loadSubmission().then(function (submission) {
-          return _this5.setSubmission(submission);
+          return _this4.setSubmission(submission);
         }, function (err) {
-          return _this5.submissionReadyReject(err);
+          return _this4.submissionReadyReject(err);
         }).catch(function (err) {
-          return _this5.submissionReadyReject(err);
+          return _this4.submissionReadyReject(err);
         });
       } else {
         this.submissionReadyResolve();
@@ -11426,17 +11605,17 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'setSrc',
     value: function setSrc(value, options) {
-      var _this6 = this;
+      var _this5 = this;
 
       if (this.setUrl(value, options)) {
         this.nosubmit = false;
         this.formio.loadForm({ params: { live: 1 } }).then(function (form) {
-          var setForm = _this6.setForm(form);
-          _this6.loadSubmission();
+          var setForm = _this5.setForm(form);
+          _this5.loadSubmission();
           return setForm;
         }).catch(function (err) {
           console.warn(err);
-          _this6.formReadyReject(err);
+          _this5.formReadyReject(err);
         });
       }
     }
@@ -11521,7 +11700,7 @@ var FormioForm = function (_FormioComponents) {
      * @returns {*}
      */
     value: function setForm(form) {
-      var _this7 = this;
+      var _this6 = this;
 
       if (form.display === 'wizard') {
         console.warn('You need to instantiate the FormioWizard class to use this form as a wizard.');
@@ -11529,11 +11708,11 @@ var FormioForm = function (_FormioComponents) {
 
       if (this.onFormBuild) {
         return this.onFormBuild.then(function () {
-          return _this7.createForm(form);
+          return _this6.createForm(form);
         }, function (err) {
-          return _this7.formReadyReject(err);
+          return _this6.formReadyReject(err);
         }).catch(function (err) {
-          return _this7.formReadyReject(err);
+          return _this6.formReadyReject(err);
         });
       }
 
@@ -11560,20 +11739,20 @@ var FormioForm = function (_FormioComponents) {
      * @return {Promise.<TResult>}
      */
     value: function setSubmission(submission) {
-      var _this8 = this;
+      var _this7 = this;
 
       return this.onSubmission = this.formReady.then(function () {
         // If nothing changed, still trigger an update.
-        if (!_this8.setValue(submission)) {
-          _this8.triggerChange({
+        if (!_this7.setValue(submission)) {
+          _this7.triggerChange({
             noValidate: true
           });
         }
-        _this8.submissionReadyResolve();
+        _this7.submissionReadyResolve();
       }, function (err) {
-        return _this8.submissionReadyReject(err);
+        return _this7.submissionReadyReject(err);
       }).catch(function (err) {
-        return _this8.submissionReadyReject(err);
+        return _this7.submissionReadyReject(err);
       });
     }
   }, {
@@ -11622,7 +11801,7 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'createForm',
     value: function createForm(form) {
-      var _this9 = this;
+      var _this8 = this;
 
       /**
        * {@link BaseComponent.component}
@@ -11633,12 +11812,12 @@ var FormioForm = function (_FormioComponents) {
         this.component = form;
       }
       return this.onFormBuild = this.render().then(function () {
-        _this9.formReadyResolve();
-        _this9.onFormBuild = null;
-        _this9.setValue(_this9.submission);
+        _this8.formReadyResolve();
+        _this8.onFormBuild = null;
+        _this8.setValue(_this8.submission);
       }).catch(function (err) {
         console.warn(err);
-        _this9.formReadyReject(err);
+        _this8.formReadyReject(err);
       });
     }
 
@@ -11650,22 +11829,24 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'render',
     value: function render() {
-      var _this10 = this;
+      var _this9 = this;
 
       return this.onElement.then(function () {
-        _this10.clear();
-        return _this10.localize().then(function () {
-          _this10.build();
-          _this10.isBuilt = true;
-          _this10.onResize();
-          _this10.on('resetForm', function () {
-            return _this10.reset();
+        _this9.clear();
+        _this9.showElement(false);
+        return _this9.localize().then(function () {
+          _this9.build();
+          _this9.isBuilt = true;
+          _this9.onResize();
+          _this9.on('resetForm', function () {
+            return _this9.reset();
           }, true);
-          _this10.on('refreshData', function () {
-            return _this10.updateValue();
+          _this9.on('refreshData', function () {
+            return _this9.updateValue();
           });
           setTimeout(function () {
-            return _this10.emit('render');
+            _this9.onChange();
+            _this9.emit('render');
           }, 1);
         });
       });
@@ -11715,19 +11896,14 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'build',
     value: function build() {
-      var _this11 = this;
+      var _this10 = this;
 
       this.on('submitButton', function () {
-        return _this11.submit();
+        return _this10.submit();
       }, true);
       this.addComponents();
-      var submission = this.getValue();
-      this.checkConditions(submission);
-      this.checkData(submission.data, {
-        noValidate: true
-      });
       this.on('requestUrl', function (args) {
-        return _this11.submitUrl(args.url, args.headers);
+        return _this10.submitUrl(args.url, args.headers);
       }, true);
     }
 
@@ -11828,6 +12004,8 @@ var FormioForm = function (_FormioComponents) {
       var value = _lodash2.default.clone(this._submission);
       value.changed = changed;
       value.isValid = this.checkData(value.data, flags);
+      this.showElement(true);
+      this.loading = false;
       this.emit('change', value);
     }
 
@@ -11874,34 +12052,34 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'executeSubmit',
     value: function executeSubmit() {
-      var _this12 = this;
+      var _this11 = this;
 
       return new _nativePromiseOnly2.default(function (resolve, reject) {
         // Read-only forms should never submit.
-        if (_this12.options.readOnly) {
-          return resolve(_this12.submission);
+        if (_this11.options.readOnly) {
+          return resolve(_this11.submission);
         }
 
-        var submission = _this12.submission || {};
-        _this12.hook('beforeSubmit', submission, function (err) {
+        var submission = _this11.submission || {};
+        _this11.hook('beforeSubmit', submission, function (err) {
           if (err) {
-            _this12.showErrors(err);
+            _this11.showErrors(err);
             return reject(err.message || err);
           }
 
-          if (submission && submission.data && _this12.checkValidity(submission.data, true)) {
-            _this12.loading = true;
-            if (_this12.nosubmit || !_this12.formio) {
-              return resolve(_this12.onSubmit(submission, false));
+          if (submission && submission.data && _this11.checkValidity(submission.data, true)) {
+            _this11.loading = true;
+            if (_this11.nosubmit || !_this11.formio) {
+              return resolve(_this11.onSubmit(submission, false));
             }
-            return _this12.formio.saveSubmission(submission).then(function (result) {
-              return resolve(_this12.onSubmit(result, true));
+            return _this11.formio.saveSubmission(submission).then(function (result) {
+              return resolve(_this11.onSubmit(result, true));
             }).catch(function (err) {
-              _this12.onSubmissionError(err);
+              _this11.onSubmissionError(err);
               reject(err);
             });
           } else {
-            _this12.showErrors();
+            _this11.showErrors();
             return reject('Invalid Submission');
           }
         });
@@ -11931,11 +12109,11 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'submit',
     value: function submit(before) {
-      var _this13 = this;
+      var _this12 = this;
 
       if (!before) {
         return this.beforeSubmit().then(function () {
-          return _this13.executeSubmit();
+          return _this12.executeSubmit();
         });
       } else {
         return this.executeSubmit();
@@ -11944,7 +12122,7 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'submitUrl',
     value: function submitUrl(URL, headers) {
-      var _this14 = this;
+      var _this13 = this;
 
       if (!URL) {
         return console.warn('Missing URL argument');
@@ -11967,8 +12145,8 @@ var FormioForm = function (_FormioComponents) {
       if (API_URL && settings) {
         try {
           _formio2.default.makeStaticRequest(API_URL, settings.method, submission, settings.headers).then(function () {
-            _this14.emit('requestDone');
-            _this14.setAlert('success', '<p> Success </p>');
+            _this13.emit('requestDone');
+            _this13.setAlert('success', '<p> Success </p>');
           });
         } catch (e) {
           this.showErrors(e.statusText + ' ' + e.status);
@@ -11984,15 +12162,15 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'language',
     set: function set(lang) {
-      var _this15 = this;
+      var _this14 = this;
 
       return new _nativePromiseOnly2.default(function (resolve, reject) {
-        _this15.options.language = lang;
+        _this14.options.language = lang;
         _i18next2.default.changeLanguage(lang, function (err) {
           if (err) {
             return reject(err);
           }
-          _this15.redraw();
+          _this14.redraw();
           resolve();
         });
       });
@@ -12030,10 +12208,10 @@ var FormioForm = function (_FormioComponents) {
   }, {
     key: 'ready',
     get: function get() {
-      var _this16 = this;
+      var _this15 = this;
 
       return this.formReady.then(function () {
-        return _this16.submissionReady;
+        return _this15.submissionReady;
       });
     }
 
@@ -12070,9 +12248,9 @@ var FormioForm = function (_FormioComponents) {
         if (this.loader) {
           try {
             if (loading) {
-              this.prepend(this.loader);
+              this.prependTo(this.loader, this.wrapper);
             } else {
-              this.removeChild(this.loader);
+              this.removeChildFrom(this.loader, this.wrapper);
             }
           } catch (err) {
             // ingore
@@ -13031,7 +13209,7 @@ var Formio = function () {
 
       // Get the cached promise to save multiple loads.
       if (!opts.ignoreCache && method === 'GET' && Formio.cache.hasOwnProperty(cacheKey)) {
-        return Formio.cache[cacheKey];
+        return _nativePromiseOnly2.default.resolve(Formio.cache[cacheKey]);
       }
 
       // Set up and fetch request
@@ -13057,8 +13235,7 @@ var Formio = function () {
       options = Formio.pluginAlter('requestOptions', options, url);
 
       var requestToken = options.headers.get('x-jwt-token');
-
-      var requestPromise = fetch(url, options).then(function (response) {
+      return fetch(url, options).then(function (response) {
         // Allow plugins to respond.
         response = Formio.pluginAlter('requestResponse', response, Formio);
 
@@ -13130,15 +13307,24 @@ var Formio = function () {
           return result;
         }
 
+        var resultCopy = {};
+
         // Shallow copy result so modifications don't end up in cache
         if (Array.isArray(result)) {
-          var resultCopy = result.map(_shallowCopy2.default);
+          resultCopy = result.map(_shallowCopy2.default);
           resultCopy.skip = result.skip;
           resultCopy.limit = result.limit;
           resultCopy.serverCount = result.serverCount;
-          return resultCopy;
+        } else {
+          resultCopy = (0, _shallowCopy2.default)(result);
         }
-        return (0, _shallowCopy2.default)(result);
+
+        // Cache the response.
+        if (method === 'GET') {
+          Formio.cache[cacheKey] = resultCopy;
+        }
+
+        return resultCopy;
       }).catch(function (err) {
         if (err === 'Bad Token') {
           Formio.setToken(null);
@@ -13148,21 +13334,9 @@ var Formio = function () {
           err.message = 'Could not connect to API server (' + err.message + ')';
           err.networkError = true;
         }
-        if (Formio.cache.hasOwnProperty(cacheKey)) {
-          // Remove failed promises from cache
-          delete Formio.cache[cacheKey];
-        }
         // Propagate error so client can handle accordingly
         throw err;
       });
-
-      // Cache the request promise.
-      if (method === 'GET') {
-        Formio.cache[cacheKey] = requestPromise;
-      }
-
-      // Return the request promise.
-      return requestPromise;
     }
   }, {
     key: 'setToken',
@@ -14375,9 +14549,7 @@ var FormioWizard = function (_FormioForm) {
 
       if (this.wizardNav) {
         this.wizardNav.innerHTML = '';
-        if (this.element.contains(this.wizardNav)) {
-          this.element.removeChild(this.wizardNav);
-        }
+        this.removeChild(this.wizardNav);
       }
       if (this.wizard.full) {
         return;
@@ -17179,7 +17351,7 @@ return void 0!==t&&null!==t&&i===e},r=(t.isNode=function(e){return"object"===("u
 
 }).call(this,require('_process'))
 },{"_process":83}],62:[function(require,module,exports){
-/* flatpickr v4.2.4, @license MIT */
+/* flatpickr v4.3.2, @license MIT */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -17232,10 +17404,6 @@ function debounce(func, wait, immediate) {
 var arrayify = function (obj) {
     return obj instanceof Array ? obj : [obj];
 };
-function mouseDelta(e) {
-    var delta = e.wheelDelta || -e.deltaY;
-    return delta >= 0 ? 1 : -1;
-}
 
 var do_nothing = function () { return undefined; };
 var revFormat = {
@@ -17432,14 +17600,15 @@ var english = {
 
 var createDateFormatter = function (_a) {
     var _b = _a.config, config = _b === void 0 ? defaults : _b, _c = _a.l10n, l10n = _c === void 0 ? english : _c;
-    return function (dateObj, frmt) {
+    return function (dateObj, frmt, overrideLocale) {
         if (config.formatDate !== undefined)
             return config.formatDate(dateObj, frmt);
+        var locale = overrideLocale || l10n;
         return frmt
             .split("")
             .map(function (c, i, arr) {
             return formats[c] && arr[i - 1] !== "\\"
-                ? formats[c](dateObj, l10n, config)
+                ? formats[c](dateObj, locale, config)
                 : c !== "\\" ? c : "";
         })
             .join("");
@@ -17655,7 +17824,6 @@ function FlatpickrInstance(element, instanceConfig) {
         l10n: english,
     };
     self.parseDate = createDateParser({ config: self.config, l10n: self.l10n });
-    self._animationLoop = [];
     self._handlers = [];
     self._bind = bind;
     self._setHoursFromDate = setHoursFromDate;
@@ -17705,8 +17873,12 @@ function FlatpickrInstance(element, instanceConfig) {
         self.showTimeInput =
             self.selectedDates.length > 0 || self.config.noCalendar;
         if (self.weekWrapper !== undefined && self.daysContainer !== undefined) {
+            self.calendarContainer.style.visibility = "hidden";
+            self.calendarContainer.style.display = "block";
             self.calendarContainer.style.width =
                 self.daysContainer.offsetWidth + self.weekWrapper.offsetWidth + "px";
+            self.calendarContainer.style.visibility = "visible";
+            self.calendarContainer.style.display = null;
         }
         var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
         if (!self.isMobile && isSafari) {
@@ -17847,11 +18019,10 @@ function FlatpickrInstance(element, instanceConfig) {
         }
         var debouncedResize = debounce(onResize, 50);
         self._debouncedChange = debounce(triggerChange, DEBOUNCED_CHANGE_MS);
-        if (self.config.mode === "range" &&
-            self.daysContainer &&
-            !/iPhone|iPad|iPod/i.test(navigator.userAgent))
+        if (self.daysContainer && !/iPhone|iPad|iPod/i.test(navigator.userAgent))
             bind(self.daysContainer, "mouseover", function (e) {
-                return onMouseOver(e.target);
+                if (self.config.mode === "range")
+                    onMouseOver(e.target);
             });
         bind(window.document.body, "keydown", onKeyDown);
         if (!self.config.static)
@@ -17859,22 +18030,17 @@ function FlatpickrInstance(element, instanceConfig) {
         if (!self.config.inline && !self.config.static)
             bind(window, "resize", debouncedResize);
         if (window.ontouchstart !== undefined)
-            bind(window.document.body, "touchstart", documentClick);
-        bind(window.document.body, "mousedown", onClick(documentClick));
-        bind(window.document.body, "focus", documentClick, { capture: true });
+            bind(window.document, "touchstart", documentClick);
+        bind(window.document, "mousedown", onClick(documentClick));
+        bind(window.document, "focus", documentClick, { capture: true });
         if (self.config.clickOpens === true) {
             bind(self._input, "focus", self.open);
             bind(self._input, "mousedown", onClick(self.open));
         }
         if (self.daysContainer !== undefined) {
-            bind(self.monthNav, "wheel", onMonthNavScroll);
             bind(self.monthNav, "mousedown", onClick(onMonthNavClick));
             bind(self.monthNav, ["keyup", "increment"], onYearInput);
             bind(self.daysContainer, "mousedown", onClick(selectDate));
-            if (self.config.animate) {
-                bind(self.daysContainer, ["webkitAnimationEnd", "animationend"], animateDays);
-                bind(self.monthNav, ["webkitAnimationEnd", "animationend"], animateMonths);
-            }
         }
         if (self.timeContainer !== undefined &&
             self.minuteElement !== undefined &&
@@ -17882,9 +18048,11 @@ function FlatpickrInstance(element, instanceConfig) {
             var selText = function (e) {
                 return e.target.select();
             };
-            bind(self.timeContainer, ["wheel", "input", "increment"], updateTime);
+            bind(self.timeContainer, ["input", "increment"], updateTime);
             bind(self.timeContainer, "mousedown", onClick(timeIncrement));
-            bind(self.timeContainer, ["wheel", "input", "increment"], self._debouncedChange, { passive: true });
+            bind(self.timeContainer, ["input", "increment"], self._debouncedChange, {
+                passive: true,
+            });
             bind([self.hourElement, self.minuteElement], ["focus", "click"], selText);
             if (self.secondElement !== undefined)
                 bind(self.secondElement, "focus", function () { return self.secondElement && self.secondElement.select(); });
@@ -17894,51 +18062,6 @@ function FlatpickrInstance(element, instanceConfig) {
                     triggerChange();
                 }));
             }
-        }
-    }
-    function processPostDayAnimation() {
-        self._animationLoop.forEach(function (f) { return f(); });
-        self._animationLoop = [];
-    }
-    function animateDays(e) {
-        if (self.daysContainer && self.daysContainer.childNodes.length > 1) {
-            switch (e.animationName) {
-                case "fpSlideLeft":
-                    self.daysContainer.lastChild &&
-                        self.daysContainer.lastChild.classList.remove("slideLeftNew");
-                    self.daysContainer.removeChild(self.daysContainer
-                        .firstChild);
-                    self.days = self.daysContainer.firstChild;
-                    processPostDayAnimation();
-                    break;
-                case "fpSlideRight":
-                    self.daysContainer.firstChild &&
-                        self.daysContainer.firstChild.classList.remove("slideRightNew");
-                    self.daysContainer.removeChild(self.daysContainer
-                        .lastChild);
-                    self.days = self.daysContainer.firstChild;
-                    processPostDayAnimation();
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-    function animateMonths(e) {
-        switch (e.animationName) {
-            case "fpSlideLeftNew":
-            case "fpSlideRightNew":
-                self.navigationCurrentMonth.classList.remove("slideLeftNew");
-                self.navigationCurrentMonth.classList.remove("slideRightNew");
-                var nav = self.navigationCurrentMonth;
-                while (nav.nextSibling &&
-                    /curr/.test(nav.nextSibling.className))
-                    self.monthNav.removeChild(nav.nextSibling);
-                while (nav.previousSibling &&
-                    /curr/.test(nav.previousSibling.className))
-                    self.monthNav.removeChild(nav.previousSibling);
-                self.oldCurMonth = undefined;
-                break;
         }
     }
     function jumpToDate(jumpDate) {
@@ -18094,21 +18217,17 @@ function FlatpickrInstance(element, instanceConfig) {
         };
         if (targetNode === undefined && offset !== 0) {
             if (offset > 0) {
-                self.changeMonth(1, true, undefined, true);
+                self.changeMonth(1, true, true);
                 newIndex = newIndex % 42;
             }
             else if (offset < 0) {
-                self.changeMonth(-1, true, undefined, true);
+                self.changeMonth(-1, true, true);
                 newIndex += 42;
             }
-            return afterDayAnim(focus);
         }
         focus();
     }
-    function afterDayAnim(fn) {
-        self.config.animate === true ? self._animationLoop.push(fn) : fn();
-    }
-    function buildDays(delta) {
+    function buildDays() {
         if (self.daysContainer === undefined) {
             return;
         }
@@ -18149,17 +18268,9 @@ function FlatpickrInstance(element, instanceConfig) {
             updateNavigationCurrentMonth();
         var dayContainer = createElement("div", "dayContainer");
         dayContainer.appendChild(days);
-        if (!self.config.animate || delta === undefined)
-            clearNode(self.daysContainer);
-        else {
-            while (self.daysContainer.childNodes.length > 1)
-                self.daysContainer.removeChild(self.daysContainer.firstChild);
-        }
-        if (delta && delta >= 0)
-            self.daysContainer.appendChild(dayContainer);
-        else
-            self.daysContainer.insertBefore(dayContainer, self.daysContainer.firstChild);
-        self.days = self.daysContainer.childNodes[0];
+        clearNode(self.daysContainer);
+        self.daysContainer.insertBefore(dayContainer, self.daysContainer.firstChild);
+        self.days = self.daysContainer.firstChild;
     }
     function buildMonthNav() {
         var monthNavFragment = window.document.createDocumentFragment();
@@ -18167,10 +18278,8 @@ function FlatpickrInstance(element, instanceConfig) {
         self.prevMonthNav = createElement("span", "flatpickr-prev-month");
         self.prevMonthNav.innerHTML = self.config.prevArrow;
         self.currentMonthElement = createElement("span", "cur-month");
-        self.currentMonthElement.title = self.l10n.scrollTitle;
         var yearInput = createNumberInput("cur-year", { tabindex: "-1" });
         self.currentYearElement = yearInput.childNodes[0];
-        self.currentYearElement.title = self.l10n.scrollTitle;
         if (self.config.minDate)
             self.currentYearElement.setAttribute("data-min", self.config.minDate.getFullYear().toString());
         if (self.config.maxDate) {
@@ -18233,7 +18342,6 @@ function FlatpickrInstance(element, instanceConfig) {
         self.hourElement.setAttribute("data-max", self.config.time_24hr ? "23" : "12");
         self.minuteElement.setAttribute("data-min", "0");
         self.minuteElement.setAttribute("data-max", "59");
-        self.hourElement.title = self.minuteElement.title = self.l10n.scrollTitle;
         self.timeContainer.appendChild(hourInput);
         self.timeContainer.appendChild(separator);
         self.timeContainer.appendChild(minuteInput);
@@ -18284,9 +18392,8 @@ function FlatpickrInstance(element, instanceConfig) {
             weekNumbers: weekNumbers,
         };
     }
-    function changeMonth(value, is_offset, animate, from_keyboard) {
+    function changeMonth(value, is_offset, from_keyboard) {
         if (is_offset === void 0) { is_offset = true; }
-        if (animate === void 0) { animate = self.config.animate; }
         if (from_keyboard === void 0) { from_keyboard = false; }
         var delta = is_offset ? value : value - self.currentMonth;
         if ((delta < 0 && self._hidePrevMonthArrow) ||
@@ -18298,54 +18405,14 @@ function FlatpickrInstance(element, instanceConfig) {
             self.currentMonth = (self.currentMonth + 12) % 12;
             triggerEvent("onYearChange");
         }
-        buildDays(animate ? delta : undefined);
-        if (!animate) {
-            triggerEvent("onMonthChange");
-            return updateNavigationCurrentMonth();
-        }
-        var nav = self.navigationCurrentMonth;
-        if (delta < 0) {
-            while (nav.nextSibling &&
-                /curr/.test(nav.nextSibling.className))
-                self.monthNav.removeChild(nav.nextSibling);
-        }
-        else if (delta > 0) {
-            while (nav.previousSibling &&
-                /curr/.test(nav.previousSibling.className))
-                self.monthNav.removeChild(nav.previousSibling);
-        }
-        self.oldCurMonth = self.navigationCurrentMonth;
-        self.navigationCurrentMonth = self.monthNav.insertBefore(self.oldCurMonth.cloneNode(true), delta > 0 ? self.oldCurMonth.nextSibling : self.oldCurMonth);
-        var daysContainer = self.daysContainer;
-        if (daysContainer.firstChild && daysContainer.lastChild) {
-            if (delta > 0) {
-                daysContainer.firstChild.classList.add("slideLeft");
-                daysContainer.lastChild.classList.add("slideLeftNew");
-                self.oldCurMonth.classList.add("slideLeft");
-                self.navigationCurrentMonth.classList.add("slideLeftNew");
-            }
-            else if (delta < 0) {
-                daysContainer.firstChild.classList.add("slideRightNew");
-                daysContainer.lastChild.classList.add("slideRight");
-                self.oldCurMonth.classList.add("slideRight");
-                self.navigationCurrentMonth.classList.add("slideRightNew");
-            }
-        }
-        self.currentMonthElement = self.navigationCurrentMonth
-            .firstChild;
-        self.currentYearElement = self.navigationCurrentMonth.lastChild
-            .childNodes[0];
+        buildDays();
+        triggerEvent("onMonthChange");
         updateNavigationCurrentMonth();
-        if (self.oldCurMonth.firstChild)
-            self.oldCurMonth.firstChild.textContent = monthToStr(self.currentMonth - delta, self.config.shorthandCurrentMonth, self.l10n);
-        afterDayAnim(function () { return triggerEvent("onMonthChange"); });
         if (from_keyboard &&
             document.activeElement &&
             document.activeElement.$i) {
-            var index_1 = document.activeElement.$i;
-            afterDayAnim(function () {
-                focusOnDay(index_1, 0);
-            });
+            var index = document.activeElement.$i;
+            focusOnDay(index, 0);
         }
     }
     function clear(triggerChangeEvent) {
@@ -18579,7 +18646,7 @@ function FlatpickrInstance(element, instanceConfig) {
                             if (!e.ctrlKey)
                                 focusOnDay(e.target.$i, delta_1);
                             else
-                                changeMonth(delta_1, true, undefined, true);
+                                changeMonth(delta_1, true, true);
                         }
                     }
                     else if (self.hourElement)
@@ -18911,10 +18978,13 @@ function FlatpickrInstance(element, instanceConfig) {
     }
     function focusAndClose() {
         self._input.focus();
-        if (window.navigator.userAgent.indexOf("MSIE") === -1)
-            self.close();
-        else
+        if (window.navigator.userAgent.indexOf("MSIE") !== -1 ||
+            navigator.msMaxTouchPoints !== undefined) {
             setTimeout(self.close, 0);
+        }
+        else {
+            self.close();
+        }
     }
     function selectDate(e) {
         e.preventDefault();
@@ -18987,7 +19057,7 @@ function FlatpickrInstance(element, instanceConfig) {
         if (!shouldChangeMonth)
             focusOnDay(target.$i, 0);
         else
-            afterDayAnim(function () { return self.selectedDateElem && self.selectedDateElem.focus(); });
+            self.selectedDateElem && self.selectedDateElem.focus();
         if (self.hourElement !== undefined)
             setTimeout(function () { return self.hourElement !== undefined && self.hourElement.select(); }, 451);
         if (self.config.closeOnSelect) {
@@ -19043,7 +19113,8 @@ function FlatpickrInstance(element, instanceConfig) {
         else
             self.config.errorHandler(new Error("Invalid date supplied: " + JSON.stringify(inputDate)));
         self.selectedDates = dates.filter(function (d) { return d instanceof Date && isEnabled(d, false); });
-        self.selectedDates.sort(function (a, b) { return a.getTime() - b.getTime(); });
+        if (self.config.mode === "range")
+            self.selectedDates.sort(function (a, b) { return a.getTime() - b.getTime(); });
     }
     function setDate(date, triggerChange, format) {
         if (triggerChange === void 0) { triggerChange = false; }
@@ -19141,6 +19212,7 @@ function FlatpickrInstance(element, instanceConfig) {
             self.altInput.placeholder = self.input.placeholder;
             self.altInput.disabled = self.input.disabled;
             self.altInput.required = self.input.required;
+            self.altInput.tabIndex = self.input.tabIndex;
             self.altInput.type = "text";
             self.input.type = "hidden";
             if (!self.config.static && self.input.parentNode)
@@ -19261,33 +19333,22 @@ function FlatpickrInstance(element, instanceConfig) {
         if (triggerChange !== false)
             triggerEvent("onValueUpdate");
     }
-    function onMonthNavScroll(e) {
-        e.preventDefault();
-        var isYear = self.currentYearElement.parentNode &&
-            self.currentYearElement.parentNode.contains(e.target);
-        if (e.target === self.currentMonthElement || isYear) {
-            var delta = mouseDelta(e);
-            if (isYear) {
-                changeYear(self.currentYear + delta);
-                e.target.value = self.currentYear.toString();
-            }
-            else
-                self.changeMonth(delta, true, false);
-        }
-    }
     function onMonthNavClick(e) {
+        e.preventDefault();
         var isPrevMonth = self.prevMonthNav.contains(e.target);
         var isNextMonth = self.nextMonthNav.contains(e.target);
-        if (isPrevMonth || isNextMonth)
+        if (isPrevMonth || isNextMonth) {
             changeMonth(isPrevMonth ? -1 : 1);
+        }
         else if (e.target === self.currentYearElement) {
-            e.preventDefault();
             self.currentYearElement.select();
         }
-        else if (e.target.className === "arrowUp")
+        else if (e.target.className === "arrowUp") {
             self.changeYear(self.currentYear + 1);
-        else if (e.target.className === "arrowDown")
+        }
+        else if (e.target.className === "arrowDown") {
             self.changeYear(self.currentYear - 1);
+        }
     }
     function timeWrapper(e) {
         e.preventDefault();
@@ -19297,9 +19358,7 @@ function FlatpickrInstance(element, instanceConfig) {
                 self.l10n.amPM[int(self.amPM.textContent === self.l10n.amPM[0])];
         }
         var min = parseFloat(input.getAttribute("data-min")), max = parseFloat(input.getAttribute("data-max")), step = parseFloat(input.getAttribute("data-step")), curValue = parseInt(input.value, 10), delta = e.delta ||
-            (isKeyDown
-                ? e.which === 38 ? 1 : -1
-                : Math.max(-1, Math.min(1, e.wheelDelta || -e.deltaY)) || 0);
+            (isKeyDown ? (e.which === 38 ? 1 : -1) : 0);
         var newValue = curValue + step * delta;
         if (typeof input.value !== "undefined" && input.value.length === 2) {
             var isHourElem = input === self.hourElement, isMinuteElem = input === self.minuteElement;
@@ -19395,7 +19454,7 @@ Date.prototype.fp_incr = function (days) {
 };
 var flatpickr$1 = flatpickr;
 
-exports['default'] = flatpickr$1;
+exports.default = flatpickr$1;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

@@ -395,9 +395,9 @@ export class BaseComponent {
   }
 
   setupValueElement(element) {
-    let value = this.value;
+    let value = this.getValue();
     value = this.isEmpty(value) ? this.defaultViewOnlyValue : this.getView(value);
-    element.appendChild(this.text(value));
+    element.innerHTML = value;
   }
 
   get defaultViewOnlyValue() {
@@ -405,17 +405,26 @@ export class BaseComponent {
   }
 
   getView(value) {
-    return _.toString(value);
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+
+    return value.toString();
   }
 
   updateViewOnlyValue() {
-    this.empty(this.valueElement);
+    if (!this.valueElement) {
+      return;
+    }
+
     this.setupValueElement(this.valueElement);
   }
 
   empty(element) {
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
+    if (element) {
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
     }
   }
 
@@ -1371,39 +1380,52 @@ export class BaseComponent {
    * @param show
    */
   show(show) {
-    // Ensure we stop any pending data clears.
-    if (this.clearPending) {
-      clearTimeout(this.clearPending);
-      this.clearPending = null;
-    }
-
     // Execute only if visibility changes.
     if (!show === !this._visible) {
       return show;
     }
 
     this._visible = show;
+    this.showElement(show && !this.component.hidden);
+    this.clearOnHide(show);
+    return show;
+  }
+
+  /**
+   * Show or hide the root element of this component.
+   *
+   * @param show
+   */
+  showElement(show) {
     const element = this.getElement();
     if (element) {
-      if (show && !this.component.hidden) {
+      if (show) {
         element.removeAttribute('hidden');
         element.style.visibility = 'visible';
         element.style.position = 'relative';
       }
-      else if (!show || this.component.hidden) {
+      else {
         element.setAttribute('hidden', true);
         element.style.visibility = 'hidden';
         element.style.position = 'absolute';
       }
     }
-
-    if (!show && this.component.clearOnHide) {
-      this.clearPending = setTimeout(() => this.setValue(null, {
-        noValidate: true
-      }), 200);
-    }
-
     return show;
+  }
+
+  clearOnHide(show) {
+    // clearOnHide defaults to true for old forms (without the value set) so only trigger if the value is false.
+    if (this.component.clearOnHide !== false) {
+      if (!show) {
+        delete this.data[this.component.key];
+      }
+      else if (!this.data || !this.data.hasOwnProperty(this.component.key)) {
+        // If shown, ensure the default is set.
+        this.setValue(this.defaultValue, {
+          noUpdateEvent: true
+        });
+      }
+    }
   }
 
   onResize() {}
@@ -1747,12 +1769,7 @@ export class BaseComponent {
   setCustomValidity(message, dirty) {
     if (this.errorElement && this.errorContainer) {
       this.errorElement.innerHTML = '';
-      try {
-        this.errorContainer.removeChild(this.errorElement);
-      }
-      catch (err) {
-        // ingnore
-      }
+      this.removeChildFrom(this.errorElement, this.errorContainer);
     }
     this.removeClass(this.element, 'has-error');
     this.inputs.forEach((input) => this.removeClass(input, 'is-invalid'));
@@ -1884,10 +1901,10 @@ export class BaseComponent {
     }
     if (element.loader) {
       if (loading) {
-        element.appendChild(element.loader);
+        this.appendTo(element.loader, element);
       }
-      else if (element.contains(element.loader)) {
-        element.removeChild(element.loader);
+      else {
+        this.removeChildFrom(element.loader, element);
       }
     }
   }
@@ -1926,35 +1943,53 @@ export class BaseComponent {
 
   clear() {
     this.destroy();
-    const element = this.getElement();
-    if (element) {
-      while (element.lastChild) {
-        element.removeChild(element.lastChild);
-      }
+    this.empty(this.getElement());
+  }
+
+  appendTo(element, container) {
+    if (container) {
+      container.appendChild(element);
     }
   }
 
   append(element) {
-    if (this.element) {
-      this.element.appendChild(element);
+    this.appendTo(element, this.element);
+  }
+
+  prependTo(element, container) {
+    if (container) {
+      if (container.firstChild) {
+        try {
+          container.insertBefore(element, container.firstChild);
+        }
+        catch (err) {
+          console.warn(err);
+          container.appendChild(element);
+        }
+      }
+      else {
+        container.appendChild(element);
+      }
     }
   }
 
   prepend(element) {
-    if (this.element) {
-      if (this.element.firstChild) {
-        this.element.insertBefore(element, this.element.firstChild);
+    this.prependTo(element, this.element);
+  }
+
+  removeChildFrom(element, container) {
+    if (container && container.contains(element)) {
+      try {
+        container.removeChild(element);
       }
-      else {
-        this.element.appendChild(element);
+      catch (err) {
+        console.warn(err);
       }
     }
   }
 
   removeChild(element) {
-    if (this.element) {
-      this.element.removeChild(element);
-    }
+    this.removeChildFrom(element, this.element);
   }
 
   /**

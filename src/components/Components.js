@@ -145,7 +145,7 @@ export class FormioComponents extends BaseComponent {
     component.destroy();
     const element = component.getElement();
     if (element && element.parentNode) {
-      element.parentNode.removeChild(element);
+      this.removeChildFrom(element, element.parentNode);
     }
     _.remove(components, {id: component.id});
   }
@@ -257,28 +257,13 @@ export class FormioComponents extends BaseComponent {
   }
 
   checkConditions(data) {
-    let forceShow = false;
-    let show = false;
-    _.each(this.getComponents(), (comp) => {
-      const compShow = comp.checkConditions(data);
-      forceShow |= (
-        comp.hasCondition() &&
-        compShow &&
-        comp.component &&
-        comp.component.conditional &&
-        comp.component.conditional.overrideParent
-      );
-      show |= compShow;
-    });
+    this.getComponents().forEach(comp => comp.checkConditions(data));
+    return super.checkConditions(data);
+  }
 
-    // If any child has conditions set and are visible, then force the show.
-    if (forceShow) {
-      return this.show(true);
-    }
-
-    // Show if it explicitely says so.
-    show |= super.checkConditions(data);
-    return show;
+  clearOnHide(show) {
+    super.clearOnHide(show);
+    this.getComponents().forEach(component => component.clearOnHide(show));
   }
 
   /**
@@ -403,7 +388,7 @@ export class FormioComponents extends BaseComponent {
     }
     flags = this.getFlags.apply(this, arguments);
     let changed = false;
-    _.each(this.getComponents(), (component) => {
+    this.getComponents().forEach(component => {
       if (component.type === 'button') {
         return;
       }
@@ -414,9 +399,9 @@ export class FormioComponents extends BaseComponent {
       else if (value && value.hasOwnProperty(component.component.key)) {
         changed |= component.setValue(value[component.component.key], flags);
       }
-      else if (component.hasInput) {
+      else {
         flags.noValidate = true;
-        changed |= component.setValue(null, flags);
+        changed |= component.setValue(component.defaultValue, flags);
       }
     });
     return changed;
