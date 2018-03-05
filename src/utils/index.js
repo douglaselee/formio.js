@@ -316,7 +316,7 @@ const FormioUtils = {
       if (_.isString(component.calculateValue)) {
         try {
           const util = this;
-          rowData[component.key] = (new Function('data', 'row', 'util', 'component', 'user', `var value = [];${component.calculateValue.toString()}; return value;`))(data, row, util, component, user);
+          rowData[component.key] = (new Function('data', 'row', 'util', 'component', 'user', 'submission', `var value = [];${component.calculateValue.toString()}; return value;`))(data, row, util, component, user, submission);
         }
         catch (e) {
           console.warn(`An error occurred calculating a value for ${component.key}`, e);
