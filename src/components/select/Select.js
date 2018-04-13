@@ -1,4 +1,4 @@
-import Choices from 'choices.js';
+import Choices from 'choices.js/assets/scripts/dist/choices.js';
 import _ from 'lodash';
 
 import {BaseComponent} from '../base/Base';
@@ -181,8 +181,10 @@ export class SelectComponent extends BaseComponent {
     }
 
     if (!this.choices && this.selectInput) {
-      // Detach from DOM and clear input.
-      this.removeChildFrom(this.selectInput, this.selectContainer);
+      if (this.loading) {
+        this.removeChildFrom(this.selectInput, this.selectContainer);
+      }
+
       this.selectInput.innerHTML = '';
     }
 
@@ -204,7 +206,7 @@ export class SelectComponent extends BaseComponent {
     if (this.choices) {
       this.choices.setChoices(this.selectOptions, 'value', 'label', true);
     }
-    else {
+    else if (this.loading) {
       // Re-attach select input.
       this.appendTo(this.selectInput, this.selectContainer);
     }
@@ -427,7 +429,7 @@ export class SelectComponent extends BaseComponent {
 
     if (this.component.widget === 'html5') {
       this.triggerUpdate();
-      this.addEventListener(input, 'focus', () => this.activate());
+      this.addEventListener(input, 'focus', () => this.update());
       return;
     }
 
@@ -445,13 +447,24 @@ export class SelectComponent extends BaseComponent {
       searchPlaceholderValue: placeholderValue,
       shouldSort: false,
       position: (this.component.dropdown || 'auto'),
-      searchEnabled: useSearch
+      searchEnabled: useSearch,
+      itemComparer: (choice, item) => _.isEqual(choice, item)
     };
 
     const tabIndex = input.tabIndex;
     this.addPlaceholder(input);
     this.choices = new Choices(input, choicesOptions);
-    this.choices.itemList.setAttribute('tabIndex', tabIndex);
+
+    if (this.component.multiple) {
+      this.focusableElement = this.choices.input;
+    }
+    else {
+      this.focusableElement = this.choices.containerInner;
+      this.choices.containerOuter.setAttribute('tabIndex', '-1');
+      this.addEventListener(this.choices.containerOuter, 'focus', () => this.focusableElement.focus());
+    }
+    this.focusableElement.setAttribute('tabIndex', tabIndex);
+
     this.setInputStyles(this.choices.containerOuter);
 
     // If a search field is provided, then add an event listener to update items on search.
@@ -460,18 +473,20 @@ export class SelectComponent extends BaseComponent {
       this.addEventListener(input, 'stopSearch', () => this.triggerUpdate());
     }
 
-    this.addEventListener(input, 'showDropdown', () => {
-      if (this.component.dataSrc === 'custom') {
-        this.updateCustomItems();
-      }
-
-      // Activate the control.
-      this.activate();
-    });
+    this.addEventListener(input, 'showDropdown', () => this.update());
 
     // Force the disabled state with getters and setters.
     this.disabled = this.disabled;
     this.triggerUpdate();
+  }
+
+  update() {
+    if (this.component.dataSrc === 'custom') {
+      this.updateCustomItems();
+    }
+
+    // Activate the control.
+    this.activate();
   }
 
   set disabled(disabled) {
@@ -481,12 +496,12 @@ export class SelectComponent extends BaseComponent {
     }
     if (disabled) {
       this.setDisabled(this.choices.containerInner, true);
-      this.choices.itemList.removeAttribute('tabIndex');
+      this.focusableElement.removeAttribute('tabIndex');
       this.choices.disable();
     }
     else {
       this.setDisabled(this.choices.containerInner, false);
-      this.choices.itemList.setAttribute('tabIndex', this.component.tabindex || 0);
+      this.focusableElement.setAttribute('tabIndex', this.component.tabindex || 0);
       this.choices.enable();
     }
   }
@@ -654,5 +669,9 @@ export class SelectComponent extends BaseComponent {
       this.choices.destroy();
       this.choices = null;
     }
+  }
+
+  focus() {
+    this.focusableElement.focus();
   }
 }

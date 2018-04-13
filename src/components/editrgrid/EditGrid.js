@@ -8,6 +8,9 @@ export class EditGridComponent extends FormioComponents {
     super(component, options, data);
     this.type = 'datagrid';
     this.editRows = [];
+    if (this.options.components) {
+      this.create = _.bind(this.options.components.create, this.options.components, _, this.options, _, true);
+    }
   }
 
   get emptyValue() {
@@ -51,7 +54,8 @@ export class EditGridComponent extends FormioComponents {
     return this.ce('li', {class: 'list-group-item list-group-header'}, this.renderTemplate(templateHeader, {
       components: this.component.components,
       util: FormioUtils,
-      value: this.dataValue
+      value: this.dataValue,
+      data: this.data
     }));
   }
 
@@ -59,7 +63,7 @@ export class EditGridComponent extends FormioComponents {
     return `<div class="row">
       {% util.eachComponent(components, function(component) { %}
         <div class="col-sm-2">
-          {{ row[component.key] }}
+          {{ getView(component, row[component.key]) }}
         </div>
       {% }) %}
       <div class="col-sm-2">
@@ -116,12 +120,17 @@ export class EditGridComponent extends FormioComponents {
       );
     }
     else {
+      const create = this.create;
       wrapper.appendChild(
         this.renderTemplate(rowTemplate,
           {
+            data: this.data,
             row,
             rowIndex,
             components: this.component.components,
+            getView(component, data) {
+              return create(component, data).getView(data);
+            },
             util: FormioUtils
           },
           [
@@ -152,7 +161,8 @@ export class EditGridComponent extends FormioComponents {
     return this.ce('li', {class: 'list-group-item list-group-footer'}, this.renderTemplate(footerTemplate, {
       components: this.component.components,
       util: FormioUtils,
-      value: this.dataValue
+      value: this.dataValue,
+      data: this.data
     }));
   }
 

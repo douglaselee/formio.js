@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.31.1
+### Changed
+ - Updated build with latest dependencies.
+
+## 2.31.0
+### Fixed
+ - Display of Dates within edit grids.
+
+### Changed
+ - Server errors now return a rejected promise instead of throwing an error.
+
+### Added
+ - Nested form support for forms of different types.
+ - Data variable in editgrid templates
+ - Collapsible fieldsets
+ - Autofocus feature.
+ - `getView(component, data)` option for EditGrid body template.
+
+### Fixed
+ - Interpolation for EditGrid.
+
+### Fixed
+ - Select HTML5 component with Custom data source.
+
+## 2.30.2
+### Fixed
+ - Problem where values would not get reset before getting deleted with clear on hide.
+ - Issue where change events would fire continuously because of eroneous hasChanged checks.
+
+## 2.30.1
+### Added
+ - `moment` library in calculated value and advanced conditional.
+ - Add ability to pass options to currentUser function.
+
+### Changed
+ - Removed the duck-punch from choices library for strict equality since they pulled in our pull request.
+
+### Fixed
+ - Empty string in email validator.
+ - Min-max for DataGrid component.
+
 ## 2.30.0
 ### Fixed
  - Required validator for Checkbox component.
@@ -12,10 +53,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - Input mask problems where a single instance was used to manage multiple inputs.
  - Issues with onChange events not firing for Select components.
  - Streamlined the language inititalization.
- 
+
 ### Added
  - Better data handling using getters and setters.
- 
+
 ### Changed
  - Deprecating "getRawValue" with reverse compatibility in favor of component.dataValue.
  - Made currency component to have a delimiter unless specified otherwise.
