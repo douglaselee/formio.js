@@ -1,25 +1,25 @@
 {
-  "parser": "babel-eslint",
   "extends": "formio",
-  "globals": {
-    "Formio": true,
-    "FormioForm": true,
-    "FormioPDF": true,
-    "FormioWizard": true,
-    "FormioUtils": true
+  "parserOptions": {
+    "ecmaVersion": 2015,
+    "sourceType": "module"
   },
   "env": {
     "browser": true,
-    "node": true,
-    "es6": true
+    "es6": true,
+    "node": true
   },
   "rules": {
+    "max-len": [
+      "warn",
+      {
+        "code": 123,
+        "ignoreComments": true,
+        "ignoreStrings": true
+      }
+    ],
     "no-console": "off",
-    "prefer-arrow-callback": "error",
     "prefer-const": "error",
-    "prefer-template": "error",
-    "indent": ["error", 2, {
-      "SwitchCase": 1
-    }]
+    "prefer-template": "error"
   }
 }

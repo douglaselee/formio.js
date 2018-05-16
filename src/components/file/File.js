@@ -1,7 +1,33 @@
-import {BaseComponent} from '../base/Base';
-import FormioUtils from '../../utils';
+import BaseComponent from '../base/Base';
+import {uniqueName} from '../../utils/utils';
+import download from 'downloadjs';
+import Formio from '../../Formio';
 
-export class FileComponent extends BaseComponent {
+export default class FileComponent extends BaseComponent {
+  static schema(...extend) {
+    return BaseComponent.schema({
+      type: 'file',
+      label: 'Upload',
+      key: 'file',
+      image: false,
+      imageSize: '200',
+      filePattern: '*',
+      fileMinSize: '0KB',
+      fileMaxSize: '1GB'
+    }, ...extend);
+  }
+
+  static get builderInfo() {
+    return {
+      title: 'File',
+      group: 'advanced',
+      icon: 'fa fa-file',
+      documentation: 'http://help.form.io/userguide/#file',
+      weight: 100,
+      schema: FileComponent.schema()
+    };
+  }
+
   constructor(component, options, data) {
     super(component, options, data);
     this.support = {
@@ -10,6 +36,10 @@ export class FileComponent extends BaseComponent {
       formdata: !!window.FormData,
       progress: 'upload' in new XMLHttpRequest
     };
+  }
+
+  get defaultSchema() {
+    return FileComponent.schema();
   }
 
   get emptyValue() {
@@ -163,7 +193,13 @@ export class FileComponent extends BaseComponent {
   }
 
   get fileService() {
-    return this.options.fileService || this.options.formio;
+    if (this.options.fileService) {
+      return this.options.fileService;
+    }
+    if (this.options.formio) {
+      return this.options.formio;
+    }
+    return new Formio();
   }
 
   createImageListItem(fileInfo, index) {
@@ -275,7 +311,7 @@ export class FileComponent extends BaseComponent {
     }
     if (!this.support.dnd) {
       hasWarnings = true;
-      warnings.appendChild(this.ce('p').appendChild(this.text('FFile Drag/Drop is not supported for this browser.')));
+      warnings.appendChild(this.ce('p').appendChild(this.text('File Drag/Drop is not supported for this browser.')));
     }
     if (!this.support.filereader) {
       hasWarnings = true;
@@ -294,9 +330,11 @@ export class FileComponent extends BaseComponent {
     }
   }
 
+  /* eslint-disable max-len */
   fileSize(a, b, c, d, e) {
     return `${(b = Math, c = b.log, d = 1024, e = c(a) / c(d) | 0, a / b.pow(d, e)).toFixed(2)} ${e ? `${'kMGTPEZY'[--e]}B` : 'Bytes'}`;
   }
+  /* eslint-enable max-len */
 
   createUploadStatus(fileUpload) {
     let container;
@@ -335,6 +373,7 @@ export class FileComponent extends BaseComponent {
     ]);
   }
 
+  /* eslint-disable max-depth */
   globStringToRegex(str) {
     let regexp = '', excludes = [];
     if (str.length > 2 && str[0] === '/' && str[str.length - 1] === '/') {
@@ -371,6 +410,7 @@ export class FileComponent extends BaseComponent {
     }
     return {regexp: regexp, excludes: excludes};
   }
+  /* eslint-enable max-depth */
 
   translateScalars(str) {
     if (typeof str === 'string') {
@@ -435,23 +475,7 @@ export class FileComponent extends BaseComponent {
     if (this.component.storage && files && files.length) {
       // files is not really an array and does not have a forEach method, so fake it.
       Array.prototype.forEach.call(files, file => {
-        // Check file pattern
-        if (this.component.filePattern && !this.validatePattern(file, this.component.filePattern)) {
-          return;
-        }
-
-        // Check file minimum size
-        if (this.component.fileMinSize && !this.validateMinSize(file, this.component.fileMinSize)) {
-          return;
-        }
-
-        // Check file maximum size
-        if (this.component.fileMaxSize && !this.validateMaxSize(file, this.component.fileMaxSize)) {
-          return;
-        }
-
-        // Get a unique name for this file to keep file collisions from occurring.
-        const fileName = FormioUtils.uniqueName(file.name);
+        const fileName = uniqueName(file.name);
         const fileUpload = {
           originalName: file.name,
           name: fileName,
@@ -459,6 +483,26 @@ export class FileComponent extends BaseComponent {
           status: 'info',
           message: 'Starting upload'
         };
+
+        // Check file pattern
+        if (this.component.filePattern && !this.validatePattern(file, this.component.filePattern)) {
+          fileUpload.status = 'error';
+          fileUpload.message = `File is the wrong type; it must be ${this.component.filePattern}`;
+        }
+
+        // Check file minimum size
+        if (this.component.fileMinSize && !this.validateMinSize(file, this.component.fileMinSize)) {
+          fileUpload.status = 'error';
+          fileUpload.message = `File is too small; it must be at least ${this.component.fileMinSize}`;
+        }
+
+        // Check file maximum size
+        if (this.component.fileMaxSize && !this.validateMaxSize(file, this.component.fileMaxSize)) {
+          fileUpload.status = 'error';
+          fileUpload.message = `File is too big; it must be at most ${this.component.fileMaxSize}`;
+        }
+
+        // Get a unique name for this file to keep file collisions from occurring.
         const dir = this.interpolate(this.component.dir || '', {data: this.data, row: this.row});
         const fileService = this.fileService;
         if (!fileService) {
@@ -469,7 +513,7 @@ export class FileComponent extends BaseComponent {
         let uploadStatus = this.createUploadStatus(fileUpload);
         this.uploadStatusList.appendChild(uploadStatus);
 
-        if (fileService) {
+        if (fileUpload.status !== 'error') {
           fileService.uploadFile(this.component.storage, file, fileName, dir, evt => {
             fileUpload.status = 'progress';
             fileUpload.progress = parseInt(100.0 * evt.loaded / evt.total);
@@ -505,7 +549,7 @@ export class FileComponent extends BaseComponent {
     }
     fileService.downloadFile(fileInfo).then((file) => {
       if (file) {
-        window.open(file.url, '_blank');
+        download(file.url, file.originalName, file.type);
       }
     })
       .catch((response) => {

@@ -1,6 +1,34 @@
 import SignaturePad from 'signature_pad/dist/signature_pad.js';
-import {BaseComponent} from '../base/Base';
-export class SignatureComponent extends BaseComponent {
+import BaseComponent from '../base/Base';
+import _ from 'lodash';
+
+export default class SignatureComponent extends BaseComponent {
+  static schema(...extend) {
+    return BaseComponent.schema({
+      type: 'signature',
+      label: 'Signature',
+      key: 'signature',
+      footer: 'Sign above',
+      width: '100%',
+      height: '150',
+      penColor: 'black',
+      backgroundColor: 'rgb(245,245,235)',
+      minWidth: '0.5',
+      maxWidth: '2.5'
+    }, ...extend);
+  }
+
+  static get builderInfo() {
+    return {
+      title: 'Signature',
+      group: 'advanced',
+      icon: 'fa fa-pencil',
+      weight: 120,
+      documentation: 'http://help.form.io/userguide/#signature',
+      schema: SignatureComponent.schema()
+    };
+  }
+
   constructor(component, options, data) {
     super(component, options, data);
     this.currentWidth = 0;
@@ -11,6 +39,14 @@ export class SignatureComponent extends BaseComponent {
     if (!this.component.height) {
       this.component.height = '200px';
     }
+  }
+
+  get emptyValue() {
+    return '';
+  }
+
+  get defaultSchema() {
+    return SignatureComponent.schema();
   }
 
   elementInfo() {
@@ -78,12 +114,10 @@ export class SignatureComponent extends BaseComponent {
     }
   }
 
+  /* eslint-disable max-statements */
   build() {
-    if (this.viewOnly) {
-      return this.viewOnlyBuild();
-    }
-
     this.element = this.createElement();
+    this.element.component = this;
     let classNames = this.element.getAttribute('class');
     classNames += ' signature-pad';
     this.element.setAttribute('class', classNames);
@@ -91,7 +125,7 @@ export class SignatureComponent extends BaseComponent {
     this.input = this.createInput(this.element);
     this.padBody = this.ce('div', {
       class: 'signature-pad-body',
-      style: (`width: ${this.component.width};height: ${this.component.height}`),
+      style: (`width: ${this.component.width};height: ${this.component.height};padding:0;margin:0;`),
       tabindex: this.component.tabindex || 0
     });
 
@@ -109,6 +143,13 @@ export class SignatureComponent extends BaseComponent {
       height: this.component.height
     });
     this.padBody.appendChild(this.canvas);
+
+    // Add an asterisk if required.
+    if (_.get(this.component, 'validate.required', false)) {
+      this.padBody.appendChild(this.ce('span', {
+        class: 'form-control-feedback field-required-inline text-danger'
+      }, this.getIcon('asterisk')));
+    }
 
     this.signatureImage = this.ce('img', {
       style: ('width: 100%;display: none;')
@@ -144,20 +185,27 @@ export class SignatureComponent extends BaseComponent {
     });
 
     // Ensure the signature is always the size of its container.
+    this.addEventListener(window, 'resize', _.debounce(() => this.checkSize(), 100));
     setTimeout(function checkWidth() {
-      this.checkSize();
-      setTimeout(checkWidth.bind(this), 200);
+      if (this.padBody.offsetWidth) {
+        this.checkSize();
+      }
+      else {
+        setTimeout(checkWidth.bind(this), 200);
+      }
     }.bind(this), 200);
 
     // Restore values.
     this.restoreValue();
 
-    if (this.shouldDisable) {
+    // disable the signature pad if the form in ViewOnly mode
+    if (this.shouldDisable || this.viewOnly) {
       this.disabled = true;
     }
 
     this.autofocus();
   }
+  /* eslint-enable max-statements */
 
   createViewOnlyLabel(container) {
     this.labelElement = this.ce('dt');
