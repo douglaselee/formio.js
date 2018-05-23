@@ -407,7 +407,7 @@ export function escapeRegExCharacters(value) {
  * @param data
  *   The full submission data.
  */
-export function checkCalculated(component, submission, rowData) {
+export function checkCalculated(component, submission, rowData, user) {
   // Process calculated value stuff if present.
   if (component.calculateValue) {
     _.set(rowData, component.key, evaluate(component.calculateValue, {
@@ -415,7 +415,10 @@ export function checkCalculated(component, submission, rowData) {
       data: submission ? submission.data : rowData,
       row: rowData,
       util: this,
-      component
+      component,
+      moment,
+      user,
+      submission
     }, 'value'));
   }
 }
@@ -466,7 +469,7 @@ export function checkCustomConditional(component, custom, row, data, form, varia
   if (typeof custom === 'string') {
     custom = `var ${variable} = true; ${custom}; return ${variable};`;
   }
-  const value = evaluate(custom, {component, row, data, form, instance});
+  const value = evaluate(custom, {component, row, data, form, instance, util: this, moment});
   if (value === null) {
     return onError;
   }
@@ -502,13 +505,13 @@ export function checkJsonConditional(component, json, row, data, form, onError) 
  */
 export function checkCondition(component, row, data, form, instance) {
   if (component.customConditional) {
-    return checkCustomConditional(component, component.customConditional, row, data, form, 'show', true, instance);
+    return this.checkCustomConditional(component, component.customConditional, row, data, form, 'show', true, instance);
   }
   else if (component.conditional && component.conditional.when) {
-    return checkSimpleConditional(component, component.conditional, row, data, true);
+    return this.checkSimpleConditional(component, component.conditional, row, data, true);
   }
   else if (component.conditional && component.conditional.json) {
-    return checkJsonConditional(component, component.conditional.json, row, data, form);
+    return this.checkJsonConditional(component, component.conditional.json, row, data, form);
   }
 
   // Default to show.
