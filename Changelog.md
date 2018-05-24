@@ -32,12 +32,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - Changed FormioForm name to Webform
  - Changed FormioWizard name to Wizard
  - Changed FormioPDF name to PDF
+ - Chnaged the wrapper classes for Radio and Select Boxes components to be "form-group" instead of "input-group" to make it compatible with both Bootstrap 4 and Bootstrap 3.
  - Renamed GMap component to Location component
  - Changed all exports on Components to be default exports. ```import TextFieldComponent from 'formiojs/components/textfield/TextField';```
  - Deprected ability to "attach" Formio to existing form using Formio.form method.
  - Modified all JavaScript execution to make it more consistent.
    - "component" now always refers to the JSON of the component (not the component instance)
    - "instance" now refers to the component instance. Use at your own risk of SDK changes within each component!
+
+## 3.0.0-alpha.18
+### Fixed
+ - Issue with multiple settings on Select component not allowing a submission.
+ - Problem with the Day component setting disabled where it would cause javascript error.
+ - Styling problems with Bootstrap 4 and radio and checkbox controls.
+ - Default value issues with the Day component.
+ - Problems with non-set values getting set within the submission data.
 
 ## 3.0.0-alpha.17
 ### Fixed
