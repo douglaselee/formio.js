@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - Changed FormioForm name to Webform
  - Changed FormioWizard name to Wizard
  - Changed FormioPDF name to PDF
+ - Input elements within a DataGrid now refer to the "rowIndex" instead of the column index within the "name" attributes.
  - Chnaged the wrapper classes for Radio and Select Boxes components to be "form-group" instead of "input-group" to make it compatible with both Bootstrap 4 and Bootstrap 3.
  - Renamed GMap component to Location component
  - Changed all exports on Components to be default exports. ```import TextFieldComponent from 'formiojs/components/textfield/TextField';```
@@ -39,6 +40,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - Modified all JavaScript execution to make it more consistent.
    - "component" now always refers to the JSON of the component (not the component instance)
    - "instance" now refers to the component instance. Use at your own risk of SDK changes within each component!
+
+## 3.0.0-rc.2
+### Fixed
+ - Issue with Bootstrap.js messing up the form builder accordion.
+
+## 3.0.0-alpha.20
+### Added
+ - Possibility to Disable Adding / Removing rows for Data Grid
+ - Adding numRows and numCols to table builder.
+ 
+### Fixed
+ - Hide the label component for table editing.
+ - Fixing the schema creation to not turn arrays into objects.
+ - Fixing how datagrid appends names to inputs.
+ - Ensure that the error check is fired when changed and submission. Also reset errors when conditionally hidden.
+ - Ensure new components added with builder get unique api keys.
+ - Fixed issues with number component where it would not submit.
+ - Fixed an issue where the number component would not reset its value.
+
+## 3.0.0-alpha.19
+### Fixed
+ - File data for url file uploads getting lost if it doesn't contain a .date property.
 
 ## 3.0.0-alpha.18
 ### Fixed
