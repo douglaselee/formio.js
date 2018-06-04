@@ -2,7 +2,6 @@ import Choices from 'choices.js';
 import _ from 'lodash';
 import BaseComponent from '../base/Base';
 import Formio from '../../Formio';
-import * as FormioUtils from '../../utils/utils';
 
 export default class SelectComponent extends BaseComponent {
   static schema(...extend) {
@@ -54,6 +53,11 @@ export default class SelectComponent extends BaseComponent {
     // If this component has been activated.
     this.activated = false;
 
+    // Determine when the items have been loaded.
+    this.itemsLoaded = new Promise((resolve) => {
+      this.itemsLoadedResolve = resolve;
+    });
+
     // If they wish to refresh on a value, then add that here.
     if (this.component.refreshOn) {
       this.on('change', (event) => {
@@ -69,6 +73,10 @@ export default class SelectComponent extends BaseComponent {
         }
       });
     }
+  }
+
+  get dataReady() {
+    return this.itemsLoaded;
   }
 
   get defaultSchema() {
@@ -173,6 +181,7 @@ export default class SelectComponent extends BaseComponent {
     }
   }
 
+  /* eslint-disable max-statements */
   setItems(items, fromSearch) {
     // If the items is a string, then parse as JSON.
     if (typeof items == 'string') {
@@ -244,7 +253,11 @@ export default class SelectComponent extends BaseComponent {
         this.setValue(defaultValue);
       }
     }
+
+    // Say we are done loading the items.
+    this.itemsLoadedResolve();
   }
+  /* eslint-enable max-statements */
 
   loadItems(url, search, headers, options, method, body) {
     options = options || {};
@@ -262,7 +275,6 @@ export default class SelectComponent extends BaseComponent {
 
     // Allow for url interpolation.
     url = this.interpolate(url, {
-      data: this.data,
       formioBase: Formio.getBaseUrl()
     });
 
@@ -278,7 +290,7 @@ export default class SelectComponent extends BaseComponent {
 
     // Add filter capability
     if (this.component.filter) {
-      const filter = this.interpolate(this.component.filter, {data: this.data});
+      const filter = this.interpolate(this.component.filter);
       url += (!url.includes('?') ? '?' : '&') + filter;
     }
 
@@ -299,6 +311,7 @@ export default class SelectComponent extends BaseComponent {
       .then((response) => this.setItems(response, !!search))
       .catch((err) => {
         this.loading = false;
+        this.itemsLoadedResolve();
         this.emit('componentError', {
           component: this.component,
           message: err.toString()
@@ -319,9 +332,7 @@ export default class SelectComponent extends BaseComponent {
       try {
         _.each(this.component.data.headers, (header) => {
           if (header.key) {
-            headers.set(header.key, this.interpolate(header.value, {
-              data: this.data
-            }));
+            headers.set(header.key, this.interpolate(header.value));
           }
         });
       }
@@ -334,13 +345,8 @@ export default class SelectComponent extends BaseComponent {
   }
 
   updateCustomItems() {
-    this.setItems(FormioUtils.evaluate(this.component.data.custom, {
-      values: [],
-      component: this.component,
-      data: _.cloneDeep(this.root ? this.root.data : this.data),
-      row: _.cloneDeep(this.data),
-      utils: FormioUtils,
-      instance: this
+    this.setItems(this.evaluate(this.component.data.custom, {
+      values: []
     }, 'values') || []);
   }
 
@@ -509,6 +515,14 @@ export default class SelectComponent extends BaseComponent {
 
     // If a search field is provided, then add an event listener to update items on search.
     if (this.component.searchField) {
+      // Make sure to clear the search when no value is provided.
+      if (this.choices && this.choices.input) {
+        this.addEventListener(this.choices.input, 'input', (event) => {
+          if (!event.target.value) {
+            this.triggerUpdate();
+          }
+        });
+      }
       this.addEventListener(input, 'search', (event) => this.triggerUpdate(event.detail.value));
       this.addEventListener(input, 'stopSearch', () => this.triggerUpdate());
     }
@@ -610,12 +624,13 @@ export default class SelectComponent extends BaseComponent {
 
   setValue(value, flags) {
     flags = this.getFlags.apply(this, arguments);
+    const previousValue = this.dataValue;
     if (this.component.multiple && !Array.isArray(value)) {
       value = [value];
     }
-    const hasPreviousValue = Array.isArray(this.dataValue) ? this.dataValue.length : this.dataValue;
+    const hasPreviousValue = Array.isArray(previousValue) ? previousValue.length : previousValue;
     const hasValue = Array.isArray(value) ? value.length : value;
-    const changed = this.hasChanged(value, this.dataValue);
+    const changed = this.hasChanged(value, previousValue);
     this.dataValue = value;
 
     // Do not set the value if we are loading... that will happen after it is done.
@@ -644,9 +659,13 @@ export default class SelectComponent extends BaseComponent {
     if (this.choices) {
       // Now set the value.
       if (hasValue) {
-        this.choices
-          .removeActiveItems()
-          .setChoices(this.selectOptions, 'value', 'label', true)
+        this.choices.removeActiveItems();
+        // Add the currently selected choices if they don't already exist.
+        const currentChoices = Array.isArray(this.dataValue) ? this.dataValue : [this.dataValue];
+        _.each(currentChoices, (choice) => {
+          this.addCurrentChoices(choice, this.selectOptions);
+        });
+        this.choices.setChoices(this.selectOptions, 'value', 'label', true)
           .setValueByChoice(value);
       }
       else if (hasPreviousValue) {

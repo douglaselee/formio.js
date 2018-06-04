@@ -71,6 +71,21 @@ export default class DateTimeComponent extends BaseComponent {
     return DateTimeComponent.schema();
   }
 
+  get defaultValue() {
+    const defaultValue = super.defaultValue;
+    if (defaultValue) {
+      return defaultValue;
+    }
+
+    // Check the default date.
+    const defaultDate = this.defaultDate;
+    if (defaultDate) {
+      return defaultDate.toISOString();
+    }
+
+    return '';
+  }
+
   elementInfo() {
     const info = super.elementInfo();
     info.type = 'input';
@@ -144,6 +159,7 @@ export default class DateTimeComponent extends BaseComponent {
         else {
           calendar._input.removeAttribute('disabled');
         }
+        calendar.close();
         calendar.redraw();
       }
     });
@@ -243,7 +259,7 @@ export default class DateTimeComponent extends BaseComponent {
 
   focus() {
     const input = this.inputs[0];
-    if (input) {
+    if (input && !this.options.readOnly) {
       input.calendar.altInput.focus();
     }
   }
