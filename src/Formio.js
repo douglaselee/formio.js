@@ -698,6 +698,9 @@ export default class Formio {
     if (data) {
       options.body = JSON.stringify(data);
     }
+    if (opts.credentials) {
+      options.credentials = opts.credentials;
+    }
 
     // Allow plugins to alter the options.
     options = Formio.pluginAlter('requestOptions', options, url);
