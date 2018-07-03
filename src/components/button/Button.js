@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import BaseComponent from '../base/Base';
-import {flattenComponents} from '../../utils/utils';
+import { flattenComponents } from '../../utils/utils';
 
 export default class ButtonComponent extends BaseComponent {
   static schema(...extend) {
@@ -99,12 +99,12 @@ export default class ButtonComponent extends BaseComponent {
   }
 
   buttonMessage(message) {
-    return this.ce('span', {class: 'help-block'}, this.text(message));
+    return this.ce('span', { class: 'help-block' }, this.text(message));
   }
 
   /* eslint-disable max-statements */
   build() {
-    if (this.viewOnly) {
+    if (this.viewOnly || this.options.hideButtons) {
       this.component.hidden = true;
     }
 
@@ -113,7 +113,6 @@ export default class ButtonComponent extends BaseComponent {
     this.createElement();
     this.createInput(this.element);
     this.addShortcut(this.buttonElement);
-    this.hook('input', this.buttonElement, this.element);
     if (this.component.leftIcon) {
       this.buttonElement.appendChild(this.ce('span', {
         class: this.component.leftIcon
@@ -137,20 +136,23 @@ export default class ButtonComponent extends BaseComponent {
       this.on('submitButton', () => {
         this.loading = true;
         this.disabled = true;
-      }, true);
+      });
       this.on('submitDone', () => {
-        this.loading = false;
+        this.loading  = false;
         this.disabled = false;
         this.empty(message);
+        this.addClass(this.buttonElement, 'btn-success submit-success');
+        this.removeClass(this.buttonElement, 'btn-danger submit-fail');
         this.addClass(message, 'has-success');
         this.removeClass(message, 'has-error');
-        message.appendChild(this.buttonMessage('complete'));
         this.append(message);
-      }, true);
+      });
       this.on('change', (value) => {
         this.loading = false;
         const isValid = this.root.isValid(value.data, true);
         this.disabled = this.options.readOnly || (this.component.disableOnInvalid && !isValid);
+        this.removeClass(this.buttonElement, 'btn-success submit-success');
+        this.removeClass(this.buttonElement, 'btn-danger submit-fail');
         if (isValid && this.hasError) {
           this.hasError = false;
           this.empty(message);
@@ -158,37 +160,41 @@ export default class ButtonComponent extends BaseComponent {
           this.removeClass(message, 'has-success');
           this.removeClass(message, 'has-error');
         }
-      }, true);
+      });
       this.on('error', () => {
         this.loading = false;
         this.hasError = true;
+        this.removeClass(this.buttonElement, 'btn-success submit-success');
+        this.addClass(this.buttonElement, 'btn-danger submit-fail');
         this.empty(message);
         this.removeClass(message, 'has-success');
         this.addClass(message, 'has-error');
-        message.appendChild(this.buttonMessage(this.errorMessage('error')));
         this.append(message);
-      }, true);
+      });
     }
 
     if (this.component.action === 'url') {
       this.on('requestButton', () => {
         this.loading = true;
         this.disabled = true;
-      }, true);
+      });
       this.on('requestDone', () => {
         this.loading = false;
         this.disabled = false;
-      }, true);
+      });
       this.on('change', (value) => {
         this.loading = false;
         this.disabled = (this.component.disableOnInvalid && !this.root.isValid(value.data, true));
-      }, true);
+      });
       this.on('error', () => {
         this.loading = false;
-      }, true);
+      });
     }
     this.addEventListener(this.buttonElement, 'click', (event) => {
       this.dataValue = true;
+      if (this.component.action !== 'submit' && this.component.showValidations) {
+        this.emit('checkValidity', this.data);
+      }
       switch (this.component.action) {
         case 'saveState':
         case 'submit':
@@ -342,7 +348,7 @@ export default class ButtonComponent extends BaseComponent {
             this.root.setAlert('danger', 'OAuth state does not match. Please try logging in again.');
             return;
           }
-          const submission = {data: {}, oauth: {}};
+          const submission = { data: {}, oauth: {} };
           submission.oauth[settings.provider] = params;
           submission.oauth[settings.provider].redirectURI = window.location.origin
             || `${window.location.protocol}//${window.location.host}`;
@@ -372,7 +378,7 @@ export default class ButtonComponent extends BaseComponent {
   }
 
   focus() {
-    this.button.focus();
+    this.buttonElement.focus();
   }
 }
 

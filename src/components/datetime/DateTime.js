@@ -143,8 +143,8 @@ export default class DateTimeComponent extends BaseComponent {
       minuteIncrement: _.get(this.component, 'timePicker.minuteStep', 5),
       minDate: getDateSetting(_.get(this.component, 'datePicker.minDate')),
       maxDate: getDateSetting(_.get(this.component, 'datePicker.maxDate')),
-      onChange: () => this.onChange({noValidate: true}),
-      onClose: () => (this.closedOn = Date.now())
+      onChange: () => this.onChange({ noValidate: true }),
+      onClose: () => this.closedOn = Date.now()
     };
   }
 
@@ -192,6 +192,7 @@ export default class DateTimeComponent extends BaseComponent {
   getCalendar(input) {
     if (!input.calendar && !this.options.noCalendar) {
       input.calendar = new Flatpickr(input, this.config);
+      this.addFocusBlurEvents(input.calendar.altInput);
     }
     return input.calendar;
   }

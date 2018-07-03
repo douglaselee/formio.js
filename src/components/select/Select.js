@@ -57,22 +57,6 @@ export default class SelectComponent extends BaseComponent {
     this.itemsLoaded = new Promise((resolve) => {
       this.itemsLoadedResolve = resolve;
     });
-
-    // If they wish to refresh on a value, then add that here.
-    if (this.component.refreshOn) {
-      this.on('change', (event) => {
-        if (this.component.refreshOn === 'data') {
-          this.refreshItems();
-        }
-        else if (
-          event.changed &&
-          event.changed.component &&
-          (event.changed.component.key === this.component.refreshOn)
-        ) {
-          this.refreshItems();
-        }
-      });
-    }
   }
 
   get dataReady() {
@@ -115,7 +99,7 @@ export default class SelectComponent extends BaseComponent {
       return this.t(data);
     }
 
-    const template = this.component.template ? this.interpolate(this.component.template, {item: data}) : data.label;
+    const template = this.component.template ? this.interpolate(this.component.template, { item: data }) : data.label;
     if (template) {
       const label = template.replace(/<\/?[^>]+(>|$)/g, '');
       return template.replace(label, this.t(label));
@@ -413,7 +397,7 @@ export default class SelectComponent extends BaseComponent {
             body = null;
           }
         }
-        this.loadItems(url, searchInput, this.requestHeaders, {noToken: true}, method, body);
+        this.loadItems(url, searchInput, this.requestHeaders, { noToken: true }, method, body);
         break;
       }
     }
@@ -453,8 +437,26 @@ export default class SelectComponent extends BaseComponent {
     return !this.component.lazyLoad || this.activated;
   }
 
+  /* eslint-disable max-statements */
   addInput(input, container) {
     super.addInput(input, container);
+
+    // If they wish to refresh on a value, then add that here.
+    if (this.component.refreshOn) {
+      this.on('change', (event) => {
+        if (this.component.refreshOn === 'data') {
+          this.refreshItems();
+        }
+        else if (
+          event.changed &&
+          event.changed.component &&
+          (event.changed.component.key === this.component.refreshOn)
+        ) {
+          this.refreshItems();
+        }
+      });
+    }
+
     if (this.component.multiple) {
       input.setAttribute('multiple', true);
     }
@@ -463,7 +465,7 @@ export default class SelectComponent extends BaseComponent {
       this.triggerUpdate();
       this.addEventListener(input, 'focus', () => this.update());
       this.addEventListener(input, 'keydown', (event) => {
-        const {keyCode} = event;
+        const { keyCode } = event;
 
         if ([8, 46].includes(keyCode)) {
           this.setValue(null);
@@ -509,6 +511,7 @@ export default class SelectComponent extends BaseComponent {
       this.choices.containerOuter.setAttribute('tabIndex', '-1');
       this.addEventListener(this.choices.containerOuter, 'focus', () => this.focusableElement.focus());
     }
+    this.addFocusBlurEvents(this.focusableElement);
     this.focusableElement.setAttribute('tabIndex', tabIndex);
 
     this.setInputStyles(this.choices.containerOuter);
@@ -533,6 +536,7 @@ export default class SelectComponent extends BaseComponent {
     this.disabled = this.disabled;
     this.triggerUpdate();
   }
+  /* eslint-enable max-statements */
 
   update() {
     if (this.component.dataSrc === 'custom') {

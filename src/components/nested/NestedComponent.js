@@ -1,7 +1,6 @@
-'use strict';
 import _ from 'lodash';
 import Promise from 'native-promise-only';
-import {checkCondition} from '../../utils/utils';
+import { checkCondition } from '../../utils/utils';
 import BaseComponent from '../base/Base';
 import Components from '../Components';
 
@@ -41,6 +40,18 @@ export default class NestedComponent extends BaseComponent {
 
   getComponents() {
     return this.components;
+  }
+
+  getAllComponents() {
+    return this.getComponents().reduce((components, component) => {
+      let result = component;
+
+      if (component.getAllComponents) {
+        result = component.getAllComponents();
+      }
+
+      return components.concat(result);
+    }, []);
   }
 
   /**
@@ -139,7 +150,7 @@ export default class NestedComponent extends BaseComponent {
     }
 
     if (before) {
-      const index = _.findIndex(this.components, {id: before.id});
+      const index = _.findIndex(this.components, { id: before.id });
       if (index !== -1) {
         this.components.splice(index, 0, comp);
       }
@@ -174,7 +185,7 @@ export default class NestedComponent extends BaseComponent {
       return comp;
     }
     this.setHidden(comp);
-    element = this.hook('addComponent', element, comp);
+    element = this.hook('addComponent', element, comp, this);
     if (before) {
       element.insertBefore(comp.getElement(), before);
     }
@@ -197,7 +208,7 @@ export default class NestedComponent extends BaseComponent {
     if (element && element.parentNode) {
       this.removeChildFrom(element, element.parentNode);
     }
-    _.remove(components, {id: component.id});
+    _.remove(components, { id: component.id });
   }
 
   /**
@@ -256,7 +267,7 @@ export default class NestedComponent extends BaseComponent {
   addComponents(element, data) {
     element = element || this.getContainer();
     data = data || this.data;
-    const components = this.hook('addComponents', this.componentComponents);
+    const components = this.hook('addComponents', this.componentComponents, this);
     _.each(components, (component) => this.addComponent(component, element, data));
   }
 
@@ -418,7 +429,7 @@ export default class NestedComponent extends BaseComponent {
 
   get errors() {
     let errors = [];
-    _.each(this.getComponents(), (comp) => {
+    _.each(this.getAllComponents(), (comp) => {
       const compErrors = comp.errors;
       if (compErrors.length) {
         errors = errors.concat(compErrors);

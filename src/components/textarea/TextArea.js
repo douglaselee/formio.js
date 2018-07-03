@@ -1,6 +1,6 @@
 /* global ace */
 import TextFieldComponent from '../textfield/TextField';
-import BaseComponent from '../base/Base';
+import Formio from '../../Formio';
 
 export default class TextAreaComponent extends TextFieldComponent {
   static schema(...extend) {
@@ -49,8 +49,8 @@ export default class TextAreaComponent extends TextFieldComponent {
     if (!this.component.placeholder || !this.editor) {
       return;
     }
-    var shouldShow = !this.editor.session.getValue().length;
-    var node = this.editor.renderer.emptyMessageNode;
+    const shouldShow = !this.editor.session.getValue().length;
+    let node = this.editor.renderer.emptyMessageNode;
     if (!shouldShow && node) {
       this.editor.renderer.scroller.removeChild(this.editor.renderer.emptyMessageNode);
       this.editor.renderer.emptyMessageNode = null;
@@ -92,7 +92,7 @@ export default class TextAreaComponent extends TextFieldComponent {
     container.appendChild(this.input);
 
     if (this.component.editor === 'ace') {
-      this.editorReady = BaseComponent.requireLibrary('ace', 'ace', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.0/ace.js', true)
+      this.editorReady = Formio.requireLibrary('ace', 'ace', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.0/ace.js', true)
         .then(() => {
           const mode = this.component.as || 'javascript';
           this.editor = ace.edit(this.input);

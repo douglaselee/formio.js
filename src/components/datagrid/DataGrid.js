@@ -136,7 +136,7 @@ export default class DataGridComponent extends NestedComponent {
     if (this.hasBottomSubmit()) {
       this.tableElement.appendChild(this.ce('tfoot', null,
         this.ce('tr', null,
-          this.ce('td', {colspan: this.numColumns},
+          this.ce('td', { colspan: this.numColumns },
             this.addButton()
           )
         )
@@ -231,7 +231,8 @@ export default class DataGridComponent extends NestedComponent {
       label: column.dataGridLabel ? column.label : false,
       row: options.row
     }), options, row);
-    this.hook('addComponent', container, comp);
+    comp.rowIndex = rowIndex;
+    this.hook('addComponent', container, comp, this);
     container.appendChild(comp.getElement());
     this.rows[rowIndex][column.key] = comp;
     return container;

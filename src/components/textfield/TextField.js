@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import maskInput from 'vanilla-text-mask';
 
-import {getInputMask} from '../../utils/utils';
+import { getInputMask } from '../../utils/utils';
 import BaseComponent from '../base/Base';
 
 export default class TextFieldComponent extends BaseComponent {
@@ -193,6 +193,7 @@ export default class TextFieldComponent extends BaseComponent {
       container.appendChild(textInput);
     }
     this.hook('input', textInput, container);
+    this.addFocusBlurEvents(textInput);
     this.addInputEventListener(textInput);
     this.addInputSubmitListener(textInput);
   }

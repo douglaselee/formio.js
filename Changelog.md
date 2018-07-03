@@ -7,26 +7,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### 3.0.0
 #### Breaking Changes
  - Changed the overrall structure of the library and how "imports" work to make them more structured.
-    
+
     ```js
     // To render a new form.
     import { Form } from 'formiojs';
     const renderer = new Form(document.getElementById('formio'), 'https://examples.form.io/example');
     renderer.render();
     ```
-    
+
     ```js
     // To render a form builder
     import { FormBuilder } from 'formiojs';
     const builder = new FormBuilder(document.getElementById('builder'), {components:[]});
     builder.render();
     ```
-    
+
     ```js
     // To import a component
     import TextFieldComponent from 'formiojs/components/textfield/TextField';
     ```
-    
+
  - Changed FormioComponents name to NestedComponent.
  - Changed FormioComponentsIndex name to Components
  - Changed FormioForm name to Webform
@@ -45,6 +45,75 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    - "row" always points to the "data" context object for that instance (typically row in DataGrid)
    - "data" always refers to the global data of the submission.
 
+## 3.0.0-rc.15
+### Added
+ - Possibility to override i18n settings.
+ - `focus` and `blur` events.
+ - Added uploadOnly to file component
+
+### Fixed
+  - Nested forms validation.
+  
+## 3.0.0-rc.14
+### Fixed
+ - Bad build from previous release.
+
+## 3.0.0-rc.13
+### Added
+ - Ability to not show any buttons in rendered form.
+ - Better feedback on the submit buttons when form is submitting and errors occur.
+
+### Fixed
+ - Wrong data being passed to EditGrid and DataGrid for some evals.
+
+## 3.0.0-rc.12
+### Fixed
+ - Problem with the PDF Builder where you would not see the builder elemements.
+ - Fix default value on checkboxes.
+ - Fix multiple required file fields not requiring uploading a file.
+
+### Added
+ - Make rowIndex available on editgrids and datagrids.
+ - Add custom class name to table component.
+ - Add the ability for events to trigger field logic.
+ - Add option to trigger validations when button is pressed.
+
+### Changed
+ - Upgrade i18next@11.3.3
+
+## 3.0.0-rc.11
+### Fixed
+ - Some issues with the Formio constructor to determine the project, form, and submission paths for certain urls.
+ - Problem with the form builder where it would not add elements to the correct parents, but rather the root form.
+
+### Changed
+ - Moved the dynamic library loader into the Formio lib so that it is available to other libraries without renderer.
+
+### Added
+ - Okta SSO integration.
+
+## 3.0.0-rc.10
+### Added
+ - Fontawesome for button icons.
+
+### Fixed
+ - Multiple require file field not requiring files.
+ - File component for base64 download event.
+ - Cleanup of editgrid code.
+
+## 3.0.0-rc.9
+### Changed
+ - Default value for calculated logic.
+
+### Fixed
+ - Issues with the event system where some events would get canceled by other components.
+ - Required validation for Survey component.
+ - Fixed an issue where the file service is not defined when removing images from file component.
+
+### Added
+ - Allow url uploads to respond with their own url.
+ - 'Hide Input Labels' property for Day component.
+
 ## 3.0.0-rc.8
 ### Fixed
  - Problem with the Select component where it would remove selected items while searching.
@@ -57,7 +126,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
  - Added deprecation notice to "whenReady" method and replace it with dataReady getter property.
- 
+
 ## 3.0.0-rc.7
 ### Added
  - A builder css build without font-awesome to fix issues with framework library implementations.
@@ -102,7 +171,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
  - Possibility to Disable Adding / Removing rows for Data Grid
  - Adding numRows and numCols to table builder.
- 
+
 ### Fixed
  - Hide the label component for table editing.
  - Fixing the schema creation to not turn arrays into objects.
@@ -191,7 +260,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - Problems where two text with same key not working in form builder.
  - `moment` library inside calculated value for DateTime component.
 
-## 3.0.0-alpha.1 
+## 3.0.0-alpha.1
 ### Added
  - Form Builder
  - Tags component (advanced)
@@ -201,16 +270,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - "hasClass" method to check for a class.
  - "hasValue" method to check for a value within a component.
  - Version number and license link in all builds.
- 
+
 ### Changed
  - How logic executions work by moving them into a single location within FormioUtils called "execute".
  - Made a single way to create modals for form builder and resource adding.
  - Now include Formio utils in the basic "formio" library under Formio.Utils
- 
+
 ### Removed
  - Lib folder since this will be included in the package build.
  - Dist folder since this will be included in the package build.
- 
+
 ### Fixed
  - Make sure to pass the full root data object within checkValidity.
  - Folder name for EditGrid component.
@@ -249,7 +318,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
  - Add basic support for submission states.
  - Docs about Seamless.js integration.
- - Explain why files have been rejected when validation fails. 
+ - Explain why files have been rejected when validation fails.
 
 ## 2.31.3
  - Bad Release. Do not use!
