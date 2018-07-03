@@ -474,7 +474,7 @@ export function checkCustomConditional(component, custom, row, data, form, varia
     custom = `var ${variable} = true; ${custom}; return ${variable};`;
   }
   const value = (instance && instance.evaluate) ?
-    instance.evaluate(custom, { component, row, data, form, instance, util: this, moment }) :
+    instance.evaluate(custom) :
     evaluate(custom, { component, row, data, form, instance, util: this, moment });
   if (value === null) {
     return onError;
