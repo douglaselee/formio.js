@@ -67,12 +67,12 @@ export default class WebformBuilder extends Webform {
         const removeButton = parent.ce('div', {
           class: 'btn btn-xxs btn-danger component-settings-button component-settings-button-remove'
         }, parent.getIcon('remove'));
-        parent.addEventListener(removeButton, 'click', () => parent.deleteComponent(comp));
+        parent.addEventListener(removeButton, 'click', () => parent.root.deleteComponent(comp));
 
         const editButton = parent.ce('div', {
           class: 'btn btn-xxs btn-default component-settings-button component-settings-button-edit'
         }, parent.getIcon('cog'));
-        parent.addEventListener(editButton, 'click', () => parent.editComponent(comp));
+        parent.addEventListener(editButton, 'click', () => parent.root.editComponent(comp));
 
         // Add the edit buttons to the component.
         comp.prepend(parent.ce('div', {
@@ -293,7 +293,11 @@ export default class WebformBuilder extends Webform {
     // Append the settings page to the dialog body.
     this.dialog.body.appendChild(componentEdit);
 
-    const editForm = Components.components[componentCopy.component.type].editForm();
+    // Allow editForm overrides per component.
+    const overrides = _.get(this.options, `editForm.${componentCopy.component.type}`, {});
+
+    // Get the editform for this component.
+    const editForm = Components.components[componentCopy.component.type].editForm(overrides);
 
     // Change the defaultValue component to be reflective.
     this.defaultValueComponent = getComponent(editForm.components, 'defaultValue');
@@ -746,6 +750,9 @@ export default class WebformBuilder extends Webform {
       this.dragula.destroy();
     }
     this.dragula = dragula(this.sidebarContainers.concat(this.dragContainers), {
+      moves(el) {
+        return !el.classList.contains('no-drag');
+      },
       copy(el) {
         return el.classList.contains('drag-copy');
       },

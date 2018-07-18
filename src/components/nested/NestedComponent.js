@@ -6,9 +6,7 @@ import Components from '../Components';
 
 export default class NestedComponent extends BaseComponent {
   static schema(...extend) {
-    return BaseComponent.schema({
-      tree: true
-    }, ...extend);
+    return BaseComponent.schema({}, ...extend);
   }
 
   constructor(component, options, data) {
@@ -330,6 +328,23 @@ export default class NestedComponent extends BaseComponent {
   clearOnHide(show) {
     super.clearOnHide(show);
     this.getComponents().forEach(component => component.clearOnHide(show));
+  }
+
+  show(show) {
+    const shown = super.show(show);
+    const forceShow = this.options.show && this.options.show[this.component.key];
+    const forceHide = this.options.hide && this.options.hide[this.component.key];
+    if (forceShow || forceHide) {
+      this.getComponents().forEach(component => {
+        if (forceShow) {
+          component.show(true);
+        }
+        else if (forceHide) {
+          component.show(false);
+        }
+      });
+    }
+    return shown;
   }
 
   /**
