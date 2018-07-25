@@ -86,6 +86,11 @@ export default class BaseComponent {
       tableView: true,
 
       /**
+       * If true, will show label when component is in a datagrid.
+       */
+      dataGridLabel: false,
+
+      /**
        * The input label provided to this component.
        */
       label: '',
@@ -102,6 +107,7 @@ export default class BaseComponent {
       dbIndex: false,
       customDefaultValue: '',
       calculateValue: '',
+      validateOn: 'change',
 
       /**
        * The validation criteria for this component.
@@ -160,6 +166,10 @@ export default class BaseComponent {
       highlightErrors: true,
       row: ''
     });
+
+    // Determine if we are inside a datagrid.
+    this.inDataGrid = this.options.inDataGrid;
+    this.options.inDataGrid = false;
 
     // Use the i18next that is passed in, otherwise use the global version.
     this.i18next = this.options.i18next || i18next;
@@ -957,7 +967,7 @@ export default class BaseComponent {
    */
   addButton(justIcon) {
     const addButton = this.ce('button', {
-      class: 'btn btn-primary'
+      class: 'btn btn-primary formio-button-add-row'
     });
     this.addEventListener(addButton, 'click', (event) => {
       event.preventDefault();
@@ -1015,7 +1025,7 @@ export default class BaseComponent {
   removeButton(index) {
     const removeButton = this.ce('button', {
       type: 'button',
-      class: 'btn btn-default btn-secondary'
+      class: 'btn btn-default btn-secondary formio-button-remove-row'
     });
 
     this.addEventListener(removeButton, 'click', (event) => {
@@ -1090,7 +1100,10 @@ export default class BaseComponent {
   }
 
   labelIsHidden() {
-    return !this.component.label || this.component.hideLabel || this.options.inputsOnly;
+    return !this.component.label ||
+      this.component.hideLabel ||
+      this.options.inputsOnly ||
+      (this.inDataGrid && !this.component.dataGridLabel);
   }
 
   /**
@@ -1581,7 +1594,7 @@ export default class BaseComponent {
   removeClass(element, className) {
     let cls = element.getAttribute('class');
     if (cls) {
-      cls = cls.replace(new RegExp(className, 'g'), '');
+      cls = cls.replace(new RegExp(` ${className}`, 'g'), '');
       element.setAttribute('class', cls);
     }
   }
@@ -1843,6 +1856,11 @@ export default class BaseComponent {
       this.pristine = false;
     }
 
+    // If we are supposed to validate on blur, then don't trigger validation yet.
+    if (this.component.validateOn === 'blur' && !this.errors.length) {
+      flags.noValidate = true;
+    }
+
     // Set the changed variable.
     const changed = {
       instance: this,
@@ -1924,6 +1942,14 @@ export default class BaseComponent {
     this.addEventListener(element, 'blur', () => {
       this.root.pendingBlur = FormioUtils.delay(() => {
         this.emit('blur', this);
+        if (this.component.validateOn === 'blur') {
+          this.root.triggerChange({}, {
+            instance: this,
+            component: this.component,
+            value: this.dataValue,
+            flags: {}
+          });
+        }
         this.root.focusedComponent = null;
         this.root.pendingBlur = null;
       });

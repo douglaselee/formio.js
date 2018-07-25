@@ -64,18 +64,18 @@ export default class WebformBuilder extends Webform {
         // Make sure the component position is relative so the buttons align properly.
         comp.getElement().style.position = 'relative';
 
-        const removeButton = parent.ce('div', {
+        const removeButton = this.ce('div', {
           class: 'btn btn-xxs btn-danger component-settings-button component-settings-button-remove'
-        }, parent.getIcon('remove'));
-        parent.addEventListener(removeButton, 'click', () => parent.root.deleteComponent(comp));
+        }, this.getIcon('remove'));
+        this.addEventListener(removeButton, 'click', () => this.deleteComponent(comp));
 
-        const editButton = parent.ce('div', {
+        const editButton = this.ce('div', {
           class: 'btn btn-xxs btn-default component-settings-button component-settings-button-edit'
-        }, parent.getIcon('cog'));
-        parent.addEventListener(editButton, 'click', () => parent.root.editComponent(comp));
+        }, this.getIcon('cog'));
+        this.addEventListener(editButton, 'click', () => this.editComponent(comp));
 
         // Add the edit buttons to the component.
-        comp.prepend(parent.ce('div', {
+        comp.prepend(this.ce('div', {
           class: 'component-btn-group'
         }, [removeButton, editButton]));
       }
@@ -317,6 +317,7 @@ export default class WebformBuilder extends Webform {
 
     // Pass along the form being edited.
     this.editForm.editForm = this._form;
+    this.editForm.editComponent = component;
 
     // Update the preview with this component.
     this.updateComponent(componentCopy);
@@ -647,7 +648,12 @@ export default class WebformBuilder extends Webform {
     );
   }
 
+  /* eslint-disable  max-statements */
   onDrop(element, target, source, sibling) {
+    if (!element || !element.id) {
+      console.warn('No element.id defined for dropping');
+      return;
+    }
     const builderElement = source.querySelector(`#${element.id}`);
     const newParent = this.getParentElement(element);
     if (!newParent || !newParent.component) {
@@ -726,6 +732,7 @@ export default class WebformBuilder extends Webform {
       this.form = this.schema;
     }
   }
+  /* eslint-enable  max-statements */
 
   /**
    * Adds a submit button if there are no components.

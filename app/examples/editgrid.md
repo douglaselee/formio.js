@@ -158,6 +158,7 @@ Formio.createForm(document.getElementById('formio'), {
         key: 'children',
         type: 'editgrid',
         input: true,
+        removeRow: 'Cancel',
         templates: {
           header: '' +
             '<div class="row"> \n' +
@@ -262,6 +263,13 @@ Formio.createForm(document.getElementById('formio'), {
             }
           }
         ]
+      },
+      {
+        type: 'button',
+        action: 'submit',
+        label: 'Submit',
+        theme: 'primary',
+        key: 'submit'
       }
     ]
 }).then(function(form) {
@@ -286,6 +294,10 @@ Formio.createForm(document.getElementById('formio'), {
       ]
     }
   };
+  
+  form.on('submit', function(submission) {
+    console.log(submission);
+  });
 });
 </script>
 </div>

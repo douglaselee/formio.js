@@ -45,6 +45,39 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    - "row" always points to the "data" context object for that instance (typically row in DataGrid)
    - "data" always refers to the global data of the submission.
 
+## 3.0.0-rc.26
+### Fixed
+ - Issue with the PDF builder where it would constantly update pdf components when it didn't need to.
+
+## 3.0.0-rc.25
+### Fixed
+ - Issue where the indexes on EditGrid would get messed up and could add bogus entries.
+
+### Added
+ - The lazy load setting for Select components.
+
+## 3.0.0-rc.24
+### Fixed
+ - Issues with the edit forms not overriding correctly causing inconsistencies with the forms for components.
+ - Error for Data Grid with invisible columns (Hidden components, conditionally hidden fields etc.)
+ - Issue with EditGrid where the form would invalidate when you are filling out a new row.
+ - Search placeholders on the Select dropdown.
+
+### Added
+ - CSS classes for array components buttons
+ - dataGridLabel configuration when a component is within a DataGrid element.
+
+## 3.0.0-rc.23
+### Fixed
+ - PDF builder to work much better with the drop zone handling for remote pdf forms.
+ - Fixed Data Grid components labels being rewritten to false
+ - Hidden Component value being equal to '[object Object]'
+ - DataGrid in the builder to allow for editing of the data grid.
+
+### Added 
+ - Allow for editForm overrides when embedding the form builder.
+ - A way to include a "namespace" for the tokens added to your browser so this library can handle multiple projects at once.
+
 ## 3.0.0-rc.22
 ### Added
  - Word and character counts along with validation to all text components.

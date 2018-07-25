@@ -293,6 +293,7 @@ export default class EditGridComponent extends NestedComponent {
 
   editRow(rowIndex) {
     this.editRows[rowIndex].isOpen = true;
+    this.editRows[rowIndex].editing = true;
     this.editRows[rowIndex].data = _.cloneDeep(this.dataValue[rowIndex]);
     this.refreshDOM();
   }
@@ -329,7 +330,12 @@ export default class EditGridComponent extends NestedComponent {
       return;
     }
     this.removeRowComponents(rowIndex);
-    this.dataValue[rowIndex] = this.editRows[rowIndex].data;
+    if (this.editRows[rowIndex].editing) {
+      this.dataValue[rowIndex] = this.editRows[rowIndex].data;
+    }
+    else {
+      this.dataValue.push(this.editRows[rowIndex].data);
+    }
     this.editRows[rowIndex].isOpen = false;
     this.checkValidity(this.data, true);
     this.updateValue();
@@ -405,7 +411,9 @@ export default class EditGridComponent extends NestedComponent {
       rowsValid &= rowValid;
 
       // Any open rows causes validation to fail.
-      rowsClosed &= !editRow.isOpen;
+      if (dirty) {
+        rowsClosed &= !editRow.isOpen;
+      }
     });
 
     if (!rowsValid) {
