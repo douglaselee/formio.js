@@ -45,6 +45,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    - "row" always points to the "data" context object for that instance (typically row in DataGrid)
    - "data" always refers to the global data of the submission.
 
+## 3.0.0
+### Fixed
+ - Issue where components in table component would not render conditions correctly.
+ - Issue with the selection of a radio component.
+ - Multiple Select: Fixed selected items being rendered outside of the input
+ 
+### Changed
+ - Upgraded fetch-mock@6.5.2, gulp-watch@5.0.1, karma@2.0.5, sinon@6.1.4, webpack@4.16.3, i18next@11.5.0, eslint@5.2.0, gulp-rename@1.4.0
+
 ## 3.0.0-rc.26
 ### Fixed
  - Issue with the PDF builder where it would constantly update pdf components when it didn't need to.
