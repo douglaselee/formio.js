@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import NestedComponent from '../nested/NestedComponent';
+import BaseComponent from '../base/Base';
 
 export default class DataGridComponent extends NestedComponent {
   static schema(...extend) {
@@ -294,6 +295,12 @@ export default class DataGridComponent extends NestedComponent {
     return show;
   }
 
+  updateValue(flags, value) {
+    // Intentionally skip over nested component updateValue method to keep recursive update from occurring with sub components.
+    return BaseComponent.prototype.updateValue.call(this, flags, value);
+  }
+
+  /* eslint-disable max-statements */
   setValue(value, flags) {
     flags = this.getFlags.apply(this, arguments);
     if (!value) {
@@ -311,8 +318,46 @@ export default class DataGridComponent extends NestedComponent {
     }
 
     const changed = this.hasChanged(value, this.dataValue);
+
+    //always should build if not built yet OR is trying to set empty value (in order to prevent deleting last row)
+    let shouldBuildRows = !this.isBuilt || _.isEqual(this.emptyValue, value);
+    //check if visible columns changed
+    let visibleColumnsAmount = 0;
+    _.forEach(this.visibleColumns, (value) => {
+      if (value) {
+        visibleColumnsAmount++;
+      }
+    });
+    const visibleComponentsAmount = this.visibleComponents ? this.visibleComponents.length : 0;
+    //should build if visible columns changed
+    shouldBuildRows = shouldBuildRows || visibleColumnsAmount !== visibleComponentsAmount;
+    //loop through all rows and check if there is field in new value that differs from current value
+    const keys = this.componentComponents.map((component) => {
+      return component.key;
+    });
+    for (let i = 0; i < value.length; i++) {
+      if (shouldBuildRows) {
+        break;
+      }
+      const valueRow = value[i];
+      for (let j = 0; j < keys.length; j++) {
+        const key = keys[j];
+        const newFieldValue = valueRow[key];
+        const currentFieldValue = this.rows[i] && this.rows[i][key] ? this.rows[i][key].getValue() : undefined;
+        const defaultFieldValue = this.rows[i] && this.rows[i][key] ? this.rows[i][key].defaultValue : undefined;
+        const isMissingValue = newFieldValue === undefined && currentFieldValue === defaultFieldValue;
+        if (!isMissingValue && !_.isEqual(newFieldValue, currentFieldValue)) {
+          shouldBuildRows = true;
+          break;
+        }
+      }
+    }
+
     this.dataValue = value;
-    this.buildRows();
+    if (shouldBuildRows) {
+      this.buildRows();
+    }
+
     _.each(this.rows, (row, index) => {
       if (value.length <= index) {
         return;
@@ -332,6 +377,7 @@ export default class DataGridComponent extends NestedComponent {
     });
     return changed;
   }
+  /* eslint-enable max-statements */
 
   /**
    * Get the value of this component.
@@ -339,19 +385,6 @@ export default class DataGridComponent extends NestedComponent {
    * @returns {*}
    */
   getValue() {
-    if (this.viewOnly) {
-      return this.dataValue;
-    }
-    const values = [];
-    _.each(this.rows, (row) => {
-      const value = {};
-      _.each(row, (col) => {
-        if (col && col.key) {
-          _.set(value, col.key, col.getValue());
-        }
-      });
-      values.push(value);
-    });
-    return values;
+    return this.dataValue;
   }
 }
