@@ -130,6 +130,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkJsonConditional">checkJsonConditional</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkSimpleConditional">checkSimpleConditional</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkTrigger">checkTrigger</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFlatpickrToFormat">convertFlatpickrToFormat</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFormatToFlatpickr">convertFormatToFlatpickr</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFormatToMoment">convertFormatToMoment</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-delay">delay</a></span></span></li>
@@ -180,6 +181,14 @@ export default class Components {
   }
 
   static setComponents(comps) {
+    // Set the tableView method on BaseComponent.
+    if (comps.base) {
+      // Implement the tableView method.
+      comps.base.tableView = function(value, options) {
+        const comp = Components.create(options.component, {}, {}, true);
+        return comp.getView(value);
+      };
+    }
     _.assign(Components.components, comps);
   }
 

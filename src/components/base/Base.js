@@ -141,6 +141,17 @@ export default class BaseComponent {
   }
 
   /**
+   * Provides a table view for this component. Override if you wish to do something different than using getView
+   * method of your instance.
+   *
+   * @param value
+   * @param options
+   */
+  /* eslint-disable no-unused-vars */
+  static tableView(value, options) {}
+  /* eslint-enable no-unused-vars */
+
+  /**
    * Initialize a new BaseComponent.
    *
    * @param {Object} component - The component JSON you wish to initialize.
@@ -1235,9 +1246,7 @@ export default class BaseComponent {
     container.appendChild(this.text(' '));
     container.appendChild(ttElement);
     this.tooltip = new Tooltip(ttElement, {
-      delay: {
-        hide: 100
-      },
+      trigger: 'hover click',
       placement: 'right',
       html: true,
       title: component.tooltip.replace(/(?:\r\n|\r|\n)/g, '<br />')
@@ -2667,5 +2676,14 @@ export default class BaseComponent {
     if (input) {
       input.focus();
     }
+  }
+
+  get timezone() {
+    if (navigator.languages && navigator.languages.length) {
+      return (new Date()).toLocaleTimeString(navigator.languages[0], {
+        timeZoneName:'short'
+      }).split(' ')[2];
+    }
+    return moment().format('Z');
   }
 }

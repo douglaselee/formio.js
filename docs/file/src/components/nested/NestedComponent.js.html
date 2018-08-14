@@ -130,6 +130,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkJsonConditional">checkJsonConditional</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkSimpleConditional">checkSimpleConditional</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkTrigger">checkTrigger</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFlatpickrToFormat">convertFlatpickrToFormat</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFormatToFlatpickr">convertFormatToFlatpickr</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFormatToMoment">convertFormatToMoment</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-delay">delay</a></span></span></li>
@@ -214,7 +215,7 @@ export default class NestedComponent extends BaseComponent {
     return this.getComponents().reduce((components, component) =&gt; {
       let result = component;
 
-      if (component.getAllComponents) {
+      if (component &amp;&amp; component.getAllComponents) {
         result = component.getAllComponents();
       }
 

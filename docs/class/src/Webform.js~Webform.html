@@ -130,6 +130,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkJsonConditional">checkJsonConditional</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkSimpleConditional">checkSimpleConditional</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-checkTrigger">checkTrigger</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFlatpickrToFormat">convertFlatpickrToFormat</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFormatToFlatpickr">convertFormatToFlatpickr</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertFormatToMoment">convertFormatToMoment</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-delay">delay</a></span></span></li>
@@ -168,13 +169,13 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import Webform from &apos;<span><a href="file/src/Webform.js.html#lineNumber37">formiojs/src/Webform.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import Webform from &apos;<span><a href="file/src/Webform.js.html#lineNumber38">formiojs/src/Webform.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   
-  <span data-ice="source">| <span><a href="file/src/Webform.js.html#lineNumber37">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/Webform.js.html#lineNumber38">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
@@ -530,6 +531,34 @@
         
         <div data-ice="description"><p>The Formio instance for this form.</p>
 </div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      <span class="kind" data-ice="kind">get</span>
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/Webform.js~Webform.html#instance-get-hasTimezone">hasTimezone</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
       </div>
     </td>
     <td>
@@ -914,6 +943,35 @@
     <td>
       <span class="access" data-ice="access">public</span>
       
+      <span class="kind" data-ice="kind">set</span>
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/Webform.js~Webform.html#instance-set-src">src</a></span></span><span class="code" data-ice="signature">(value: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Set the Form source, which is typically the Form.io embed URL.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
       <span class="kind" data-ice="kind">get</span>
       
       <span class="override" data-ice="override"></span>
@@ -943,7 +1001,7 @@
     <td>
       <span class="access" data-ice="access">public</span>
       
-      <span class="kind" data-ice="kind">set</span>
+      <span class="kind" data-ice="kind">get</span>
       
       <span class="override" data-ice="override"></span>
     </td>
@@ -953,13 +1011,13 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/Webform.js~Webform.html#instance-set-src">src</a></span></span><span class="code" data-ice="signature">(value: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/Webform.js~Webform.html#instance-get-submission">submission</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>: <span>*</span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Set the Form source, which is typically the Form.io embed URL.</p>
+        <div data-ice="description"><p>Returns the submission object that was set within this form.</p>
 </div>
       </div>
     </td>
@@ -1011,14 +1069,13 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/Webform.js~Webform.html#instance-get-submission">submission</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>: <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/Webform.js~Webform.html#instance-get-submissionOffset">submissionOffset</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Returns the submission object that was set within this form.</p>
-</div>
+        
       </div>
     </td>
     <td>
@@ -1106,6 +1163,34 @@
         
         <div data-ice="description"><p>Called when the formReady state of this form has been resolved.</p>
 </div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      <span class="kind" data-ice="kind">get</span>
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/Webform.js~Webform.html#instance-get-submissionTimezone">submissionTimezone</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
       </div>
     </td>
     <td>
@@ -2308,6 +2393,35 @@
 <tr data-ice="target">
     <td>
       <span class="access" data-ice="access">public</span>
+      <span data-ice="static">static</span>
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/components/base/Base.js~BaseComponent.html#static-method-tableView">tableView</a></span></span><span class="code" data-ice="signature">(value: <span>*</span>, options: <span>*</span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Provides a table view for this component.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
       
       <span class="kind" data-ice="kind">get</span>
       
@@ -2892,6 +3006,34 @@
           
           
           <span class="code" data-ice="name"><span><a href="class/src/components/base/Base.js~BaseComponent.html#instance-get-shouldDisable">shouldDisable</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      <span class="kind" data-ice="kind">get</span>
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/components/base/Base.js~BaseComponent.html#instance-get-timezone">timezone</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
       <div>
@@ -9063,7 +9205,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber49">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber50">source</a></span></span>
     </span>
   </h3>
 
@@ -9162,7 +9304,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber138">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber139">source</a></span></span>
     </span>
   </h3>
 
@@ -9206,7 +9348,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber740">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber743">source</a></span></span>
     </span>
   </h3>
 
@@ -9250,7 +9392,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber301">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber302">source</a></span></span>
     </span>
   </h3>
 
@@ -9294,7 +9436,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber219">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber220">source</a></span></span>
     </span>
   </h3>
 
@@ -9338,7 +9480,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber623">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber624">source</a></span></span>
     </span>
   </h3>
 
@@ -9395,7 +9537,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber633">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber634">source</a></span></span>
     </span>
   </h3>
 
@@ -9439,7 +9581,7 @@ within other container based components.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber164">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber165">source</a></span></span>
     </span>
   </h3>
 
@@ -9495,7 +9637,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber177">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber178">source</a></span></span>
     </span>
   </h3>
 
@@ -9539,7 +9681,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber170">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber171">source</a></span></span>
     </span>
   </h3>
 
@@ -9583,7 +9725,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber126">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber127">source</a></span></span>
     </span>
   </h3>
 
@@ -9592,6 +9734,49 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
   
   <div data-ice="description"><p>The Formio instance for this form.</p>
 </div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-get-hasTimezone">
+    <span class="access" data-ice="access">public</span>
+    
+    <span class="kind" data-ice="kind">get</span>
+    
+    
+    
+    <span class="code" data-ice="name">hasTimezone</span><span class="code" data-ice="signature">: <span>*</span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber965">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  
 
   
 
@@ -9627,7 +9812,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber762">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber765">source</a></span></span>
     </span>
   </h3>
 
@@ -9670,7 +9855,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber238">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber239">source</a></span></span>
     </span>
   </h3>
 
@@ -9726,7 +9911,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber132">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber133">source</a></span></span>
     </span>
   </h3>
 
@@ -9770,7 +9955,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber532">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber533">source</a></span></span>
     </span>
   </h3>
 
@@ -9814,7 +9999,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber523">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber524">source</a></span></span>
     </span>
   </h3>
 
@@ -9871,7 +10056,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber411">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber412">source</a></span></span>
     </span>
   </h3>
 
@@ -9914,7 +10099,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber113">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber114">source</a></span></span>
     </span>
   </h3>
 
@@ -9958,7 +10143,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber213">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber214">source</a></span></span>
     </span>
   </h3>
 
@@ -10002,7 +10187,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber150">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber151">source</a></span></span>
     </span>
   </h3>
 
@@ -10046,7 +10231,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber144">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber145">source</a></span></span>
     </span>
   </h3>
 
@@ -10090,7 +10275,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber512">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber513">source</a></span></span>
     </span>
   </h3>
 
@@ -10147,7 +10332,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber688">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber689">source</a></span></span>
     </span>
   </h3>
 
@@ -10190,7 +10375,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber223">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber224">source</a></span></span>
     </span>
   </h3>
 
@@ -10205,62 +10390,6 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
 </div>
 
   
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-get-src">
-    <span class="access" data-ice="access">public</span>
-    
-    <span class="kind" data-ice="kind">get</span>
-    
-    
-    
-    <span class="code" data-ice="name">src</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>: <span>*</span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber403">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Get the embed source of the form.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  <div class="return-params" data-ice="returnParams">
-    <h4>Return:</h4>
-    <table>
-      <tbody>
-        <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
-          
-        </tr>
-      </tbody>
-    </table>
-    <div data-ice="returnProperties">
-</div>
-  </div>
 
   
 
@@ -10289,7 +10418,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber460">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber461">source</a></span></span>
     </span>
   </h3>
 
@@ -10334,6 +10463,118 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
   
 </div>
 <div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-get-src">
+    <span class="access" data-ice="access">public</span>
+    
+    <span class="kind" data-ice="kind">get</span>
+    
+    
+    
+    <span class="code" data-ice="name">src</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>: <span>*</span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber404">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Get the embed source of the form.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
+          
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-get-submission">
+    <span class="access" data-ice="access">public</span>
+    
+    <span class="kind" data-ice="kind">get</span>
+    
+    
+    
+    <span class="code" data-ice="name">submission</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>: <span>*</span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber643">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Returns the submission object that was set within this form.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
+          
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-set-submission">
     <span class="access" data-ice="access">public</span>
     
@@ -10345,7 +10586,7 @@ form.src = &apos;https://examples.form.io/example&apos;;</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber661">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber662">source</a></span></span>
     </span>
   </h3>
 
@@ -10392,45 +10633,32 @@ form.submission = {data: {
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-get-submission">
+  <h3 data-ice="anchor" id="instance-get-submissionOffset">
     <span class="access" data-ice="access">public</span>
     
     <span class="kind" data-ice="kind">get</span>
     
     
     
-    <span class="code" data-ice="name">submission</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>: <span>*</span></span>
+    <span class="code" data-ice="name">submissionOffset</span><span class="code" data-ice="signature">: <span>*</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber642">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber961">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Returns the submission object that was set within this form.</p>
-</div>
+  
 
   
 
   <div data-ice="properties">
 </div>
 
-  <div class="return-params" data-ice="returnParams">
-    <h4>Return:</h4>
-    <table>
-      <tbody>
-        <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
-          
-        </tr>
-      </tbody>
-    </table>
-    <div data-ice="returnProperties">
-</div>
-  </div>
+  
 
   
 
@@ -10459,7 +10687,7 @@ form.submission = {data: {
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber192">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber193">source</a></span></span>
     </span>
   </h3>
 
@@ -10515,7 +10743,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber205">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber206">source</a></span></span>
     </span>
   </h3>
 
@@ -10559,7 +10787,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber198">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber199">source</a></span></span>
     </span>
   </h3>
 
@@ -10568,6 +10796,49 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
   
   <div data-ice="description"><p>Called when the formReady state of this form has been resolved.</p>
 </div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-get-submissionTimezone">
+    <span class="access" data-ice="access">public</span>
+    
+    <span class="kind" data-ice="kind">get</span>
+    
+    
+    
+    <span class="code" data-ice="name">submissionTimezone</span><span class="code" data-ice="signature">: <span>*</span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber969">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  
 
   
 
@@ -10603,7 +10874,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber120">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber121">source</a></span></span>
     </span>
   </h3>
 
@@ -10647,7 +10918,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber103">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber104">source</a></span></span>
     </span>
   </h3>
 
@@ -10691,7 +10962,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber503">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber504">source</a></span></span>
     </span>
   </h3>
 
@@ -10735,7 +11006,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber469">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber470">source</a></span></span>
     </span>
   </h3>
 
@@ -10791,7 +11062,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber300">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber301">source</a></span></span>
     </span>
   </h3>
 
@@ -10836,7 +11107,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber107">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber108">source</a></span></span>
     </span>
   </h3>
 
@@ -10879,7 +11150,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber105">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber106">source</a></span></span>
     </span>
   </h3>
 
@@ -10922,7 +11193,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber104">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber105">source</a></span></span>
     </span>
   </h3>
 
@@ -10965,7 +11236,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber106">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber107">source</a></span></span>
     </span>
   </h3>
 
@@ -11011,7 +11282,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber259">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber260">source</a></span></span>
     </span>
   </h3>
 
@@ -11095,7 +11366,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber360">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber361">source</a></span></span>
     </span>
   </h3>
 
@@ -11160,7 +11431,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber819">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber822">source</a></span></span>
     </span>
   </h3>
 
@@ -11204,7 +11475,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber948">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber951">source</a></span></span>
     </span>
   </h3>
 
@@ -11276,7 +11547,7 @@ form.src = &apos;https://examples.form.io/example/submission/234234234234234243&
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber924">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber927">source</a></span></span>
     </span>
   </h3>
 
@@ -11355,7 +11626,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber732">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber735">source</a></span></span>
     </span>
   </h3>
 
@@ -11428,7 +11699,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber935">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber938">source</a></span></span>
     </span>
   </h3>
 
@@ -11484,7 +11755,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber328">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber329">source</a></span></span>
     </span>
   </h3>
 
@@ -11543,7 +11814,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber999">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber1027">source</a></span></span>
     </span>
   </h3>
 
@@ -11614,7 +11885,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber714">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber717">source</a></span></span>
     </span>
   </h3>
 
@@ -11670,7 +11941,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber312">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber313">source</a></span></span>
     </span>
   </h3>
 
@@ -11741,7 +12012,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber410">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber411">source</a></span></span>
     </span>
   </h3>
 
@@ -11797,7 +12068,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber270">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber271">source</a></span></span>
     </span>
   </h3>
 
@@ -11853,7 +12124,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber695">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber696">source</a></span></span>
     </span>
   </h3>
 
@@ -11918,7 +12189,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber914">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber917">source</a></span></span>
     </span>
   </h3>
 
@@ -11984,7 +12255,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber892">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber895">source</a></span></span>
     </span>
   </h3>
 
@@ -12057,7 +12328,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber869">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber872">source</a></span></span>
     </span>
   </h3>
 
@@ -12138,7 +12409,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber387">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber388">source</a></span></span>
     </span>
   </h3>
 
@@ -12203,7 +12474,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber757">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber760">source</a></span></span>
     </span>
   </h3>
 
@@ -12259,7 +12530,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber773">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber776">source</a></span></span>
     </span>
   </h3>
 
@@ -12303,7 +12574,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber784">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber787">source</a></span></span>
     </span>
   </h3>
 
@@ -12371,7 +12642,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber291">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber292">source</a></span></span>
     </span>
   </h3>
 
@@ -12432,7 +12703,7 @@ a submission once it has been changed.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber596">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber597">source</a></span></span>
     </span>
   </h3>
 
@@ -12537,7 +12808,7 @@ form.setForm({
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber432">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber433">source</a></span></span>
     </span>
   </h3>
 
@@ -12603,7 +12874,7 @@ form.setForm({
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber671">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber672">source</a></span></span>
     </span>
   </h3>
 
@@ -12681,7 +12952,7 @@ form.setForm({
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber479">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber480">source</a></span></span>
     </span>
   </h3>
 
@@ -12759,7 +13030,7 @@ form.setForm({
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber703">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber704">source</a></span></span>
     </span>
   </h3>
 
@@ -12837,7 +13108,7 @@ form.setForm({
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber832">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber835">source</a></span></span>
     </span>
   </h3>
 
@@ -12910,7 +13181,7 @@ form.setForm({
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber1026">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber1054">source</a></span></span>
     </span>
   </h3>
 
@@ -13001,7 +13272,7 @@ form.submit().then((submission) =&gt; {
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber958">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber973">source</a></span></span>
     </span>
   </h3>
 
@@ -13073,7 +13344,7 @@ form.submit().then((submission) =&gt; {
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber1035">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/Webform.js.html#lineNumber1063">source</a></span></span>
     </span>
   </h3>
 
