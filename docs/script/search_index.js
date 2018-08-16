@@ -126,6 +126,18 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "formiojs/src/components/datamap/datamap.form.js~datamap",
+    "function/index.html#static-function-DataMap",
+    "<span>DataMap</span> <span class=\"search-result-import-path\">formiojs/src/components/datamap/DataMap.form.js</span>",
+    "function"
+  ],
+  [
+    "formiojs/src/components/datamap/datamap.js~datamapcomponent",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html",
+    "<span>DataMapComponent</span> <span class=\"search-result-import-path\">formiojs/src/components/datamap/DataMap.js</span>",
+    "class"
+  ],
+  [
     "formiojs/src/components/datetime/datetime.form.js~datetime",
     "function/index.html#static-function-DateTime",
     "<span>DateTime</span> <span class=\"search-result-import-path\">formiojs/src/components/datetime/DateTime.form.js</span>",
@@ -606,6 +618,12 @@ window.esdocSearchIndex = [
     "function"
   ],
   [
+    "formiojs/src/utils/utils.js~currenttimezone",
+    "function/index.html#static-function-currentTimezone",
+    "<span>currentTimezone</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
+    "function"
+  ],
+  [
     "formiojs/src/utils/utils.js~delay",
     "function/index.html#static-function-delay",
     "<span>delay</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
@@ -657,6 +675,12 @@ window.esdocSearchIndex = [
     "formiojs/src/utils/utils.js~formatascurrency",
     "function/index.html#static-function-formatAsCurrency",
     "<span>formatAsCurrency</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
+    "function"
+  ],
+  [
+    "formiojs/src/utils/utils.js~formatdate",
+    "function/index.html#static-function-formatDate",
+    "<span>formatDate</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
     "function"
   ],
   [
@@ -762,6 +786,12 @@ window.esdocSearchIndex = [
     "function"
   ],
   [
+    "formiojs/src/utils/utils.js~iteratekey",
+    "function/index.html#static-function-iterateKey",
+    "<span>iterateKey</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
+    "function"
+  ],
+  [
     "formiojs/src/utils/jsonlogic/operators.js~lodashoperators",
     "variable/index.html#static-variable-lodashOperators",
     "<span>lodashOperators</span> <span class=\"search-result-import-path\">formiojs/src/utils/jsonlogic/operators.js</span>",
@@ -780,6 +810,12 @@ window.esdocSearchIndex = [
     "function"
   ],
   [
+    "formiojs/src/utils/utils.js~offsetdate",
+    "function/index.html#static-function-offsetDate",
+    "<span>offsetDate</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
+    "function"
+  ],
+  [
     "formiojs/src/utils/utils.js~parsefloatext",
     "function/index.html#static-function-parseFloatExt",
     "<span>parseFloatExt</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
@@ -795,6 +831,12 @@ window.esdocSearchIndex = [
     "formiojs/src/utils/utils.js~setactionproperty",
     "function/index.html#static-function-setActionProperty",
     "<span>setActionProperty</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
+    "function"
+  ],
+  [
+    "formiojs/src/utils/utils.js~uniquekey",
+    "function/index.html#static-function-uniqueKey",
+    "<span>uniqueKey</span> <span class=\"search-result-import-path\">formiojs/src/utils/utils.js</span>",
     "function"
   ],
   [
@@ -1440,6 +1482,18 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/formio.js~formio#options",
+    "class/src/Formio.js~Formio.html#instance-member-options",
+    "src/Formio.js~Formio#options",
+    "member"
+  ],
+  [
+    "src/formio.js~formio#path",
+    "class/src/Formio.js~Formio.html#instance-member-path",
+    "src/Formio.js~Formio#path",
+    "member"
+  ],
+  [
     "src/formio.js~formio#pathtype",
     "class/src/Formio.js~Formio.html#instance-member-pathType",
     "src/Formio.js~Formio#pathType",
@@ -1759,13 +1813,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.js~formio.token",
-    "class/src/Formio.js~Formio.html#static-set-token",
+    "class/src/Formio.js~Formio.html#static-get-token",
     "src/Formio.js~Formio.token",
     "member"
   ],
   [
     "src/formio.js~formio.token",
-    "class/src/Formio.js~Formio.html#static-get-token",
+    "class/src/Formio.js~Formio.html#static-set-token",
     "src/Formio.js~Formio.token",
     "member"
   ],
@@ -2137,13 +2191,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/webform.js~webform#form",
-    "class/src/Webform.js~Webform.html#instance-set-form",
+    "class/src/Webform.js~Webform.html#instance-get-form",
     "src/Webform.js~Webform#form",
     "member"
   ],
   [
     "src/webform.js~webform#form",
-    "class/src/Webform.js~Webform.html#instance-get-form",
+    "class/src/Webform.js~Webform.html#instance-set-form",
     "src/Webform.js~Webform#form",
     "member"
   ],
@@ -2383,13 +2437,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/webform.js~webform#submission",
-    "class/src/Webform.js~Webform.html#instance-get-submission",
+    "class/src/Webform.js~Webform.html#instance-set-submission",
     "src/Webform.js~Webform#submission",
     "member"
   ],
   [
     "src/webform.js~webform#submission",
-    "class/src/Webform.js~Webform.html#instance-set-submission",
+    "class/src/Webform.js~Webform.html#instance-get-submission",
     "src/Webform.js~Webform#submission",
     "member"
   ],
@@ -2455,13 +2509,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/webform.js~webform#url",
-    "class/src/Webform.js~Webform.html#instance-get-url",
+    "class/src/Webform.js~Webform.html#instance-set-url",
     "src/Webform.js~Webform#url",
     "member"
   ],
   [
     "src/webform.js~webform#url",
-    "class/src/Webform.js~Webform.html#instance-set-url",
+    "class/src/Webform.js~Webform.html#instance-get-url",
     "src/Webform.js~Webform#url",
     "member"
   ],
@@ -2983,13 +3037,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/wizardbuilder.js~wizardbuilder#currentpage",
-    "class/src/WizardBuilder.js~WizardBuilder.html#instance-set-currentPage",
+    "class/src/WizardBuilder.js~WizardBuilder.html#instance-get-currentPage",
     "src/WizardBuilder.js~WizardBuilder#currentPage",
     "member"
   ],
   [
     "src/wizardbuilder.js~wizardbuilder#currentpage",
-    "class/src/WizardBuilder.js~WizardBuilder.html#instance-get-currentPage",
+    "class/src/WizardBuilder.js~WizardBuilder.html#instance-set-currentPage",
     "src/WizardBuilder.js~WizardBuilder#currentPage",
     "member"
   ],
@@ -3967,13 +4021,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
@@ -4296,12 +4350,6 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/components/base/base.js~basecomponent#timezone",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-timezone",
-    "src/components/base/Base.js~BaseComponent#timezone",
-    "member"
-  ],
-  [
     "src/components/base/base.js~basecomponent#tooltip",
     "class/src/components/base/Base.js~BaseComponent.html#instance-member-tooltip",
     "src/components/base/Base.js~BaseComponent#tooltip",
@@ -4381,13 +4429,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#visible",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-visible",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-visible",
     "src/components/base/Base.js~BaseComponent#visible",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#visible",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-visible",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-visible",
     "src/components/base/Base.js~BaseComponent#visible",
     "member"
   ],
@@ -4699,13 +4747,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/checkbox/checkbox.js~checkboxcomponent#datavalue",
-    "class/src/components/checkbox/Checkbox.js~CheckBoxComponent.html#instance-set-dataValue",
+    "class/src/components/checkbox/Checkbox.js~CheckBoxComponent.html#instance-get-dataValue",
     "src/components/checkbox/Checkbox.js~CheckBoxComponent#dataValue",
     "member"
   ],
   [
     "src/components/checkbox/checkbox.js~checkboxcomponent#datavalue",
-    "class/src/components/checkbox/Checkbox.js~CheckBoxComponent.html#instance-get-dataValue",
+    "class/src/components/checkbox/Checkbox.js~CheckBoxComponent.html#instance-set-dataValue",
     "src/components/checkbox/Checkbox.js~CheckBoxComponent#dataValue",
     "member"
   ],
@@ -5550,6 +5598,198 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/components/datamap/datamap.form.js",
+    "file/src/components/datamap/DataMap.form.js.html",
+    "src/components/datamap/DataMap.form.js",
+    "file"
+  ],
+  [
+    "src/components/datamap/datamap.js",
+    "file/src/components/datamap/DataMap.js.html",
+    "src/components/datamap/DataMap.js",
+    "file"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#addkeybutton",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-addKeyButton",
+    "src/components/datamap/DataMap.js~DataMapComponent#addKeyButton",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#addrow",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-addRow",
+    "src/components/datamap/DataMap.js~DataMapComponent#addRow",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#build",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-build",
+    "src/components/datamap/DataMap.js~DataMapComponent#build",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#buildrow",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-buildRow",
+    "src/components/datamap/DataMap.js~DataMapComponent#buildRow",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#buildrows",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-buildRows",
+    "src/components/datamap/DataMap.js~DataMapComponent#buildRows",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#componentcomponents",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-get-componentComponents",
+    "src/components/datamap/DataMap.js~DataMapComponent#componentComponents",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#constructor",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-constructor-constructor",
+    "src/components/datamap/DataMap.js~DataMapComponent#constructor",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#createheader",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-createHeader",
+    "src/components/datamap/DataMap.js~DataMapComponent#createHeader",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#createvaluecomponent",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-createValueComponent",
+    "src/components/datamap/DataMap.js~DataMapComponent#createValueComponent",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#datavalue",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-member-dataValue",
+    "src/components/datamap/DataMap.js~DataMapComponent#dataValue",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#defaultschema",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-get-defaultSchema",
+    "src/components/datamap/DataMap.js~DataMapComponent#defaultSchema",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#emptyvalue",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-get-emptyValue",
+    "src/components/datamap/DataMap.js~DataMapComponent#emptyValue",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#getvalue",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-getValue",
+    "src/components/datamap/DataMap.js~DataMapComponent#getValue",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#hasaddbutton",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-hasAddButton",
+    "src/components/datamap/DataMap.js~DataMapComponent#hasAddButton",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#haschanged",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-hasChanged",
+    "src/components/datamap/DataMap.js~DataMapComponent#hasChanged",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#hasremovebuttons",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-hasRemoveButtons",
+    "src/components/datamap/DataMap.js~DataMapComponent#hasRemoveButtons",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#removekeybutton",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-removeKeyButton",
+    "src/components/datamap/DataMap.js~DataMapComponent#removeKeyButton",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#removerow",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-removeRow",
+    "src/components/datamap/DataMap.js~DataMapComponent#removeRow",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#rows",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-member-rows",
+    "src/components/datamap/DataMap.js~DataMapComponent#rows",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#schema",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-get-schema",
+    "src/components/datamap/DataMap.js~DataMapComponent#schema",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#setvalue",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-setValue",
+    "src/components/datamap/DataMap.js~DataMapComponent#setValue",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#tableelement",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-member-tableElement",
+    "src/components/datamap/DataMap.js~DataMapComponent#tableElement",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#type",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-member-type",
+    "src/components/datamap/DataMap.js~DataMapComponent#type",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent#updatevalue",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#instance-method-updateValue",
+    "src/components/datamap/DataMap.js~DataMapComponent#updateValue",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent.builderinfo",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#static-get-builderInfo",
+    "src/components/datamap/DataMap.js~DataMapComponent.builderInfo",
+    "member"
+  ],
+  [
+    "src/components/datamap/datamap.js~datamapcomponent.schema",
+    "class/src/components/datamap/DataMap.js~DataMapComponent.html#static-method-schema",
+    "src/components/datamap/DataMap.js~DataMapComponent.schema",
+    "method"
+  ],
+  [
+    "src/components/datamap/datamap.spec.js",
+    "file/src/components/datamap/DataMap.spec.js.html",
+    "src/components/datamap/DataMap.spec.js",
+    "file"
+  ],
+  [
+    "src/components/datamap/editform/datamap.edit.display.js",
+    "file/src/components/datamap/editForm/DataMap.edit.display.js.html",
+    "src/components/datamap/editForm/DataMap.edit.display.js",
+    "file"
+  ],
+  [
+    "src/components/datamap/fixtures/comp1.js",
+    "file/src/components/datamap/fixtures/comp1.js.html",
+    "src/components/datamap/fixtures/comp1.js",
+    "file"
+  ],
+  [
+    "src/components/datamap/fixtures/index.js",
+    "file/src/components/datamap/fixtures/index.js.html",
+    "src/components/datamap/fixtures/index.js",
+    "file"
+  ],
+  [
     "src/components/datetime/datetime.form.js",
     "file/src/components/datetime/DateTime.form.js.html",
     "src/components/datetime/DateTime.form.js",
@@ -5676,16 +5916,16 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
-    "src/components/datetime/datetime.js~datetimecomponent#offset",
-    "class/src/components/datetime/DateTime.js~DateTimeComponent.html#instance-method-offset",
-    "src/components/datetime/DateTime.js~DateTimeComponent#offset",
-    "method"
-  ],
-  [
     "src/components/datetime/datetime.js~datetimecomponent#setvalueat",
     "class/src/components/datetime/DateTime.js~DateTimeComponent.html#instance-method-setValueAt",
     "src/components/datetime/DateTime.js~DateTimeComponent#setValueAt",
     "method"
+  ],
+  [
+    "src/components/datetime/datetime.js~datetimecomponent#timezone",
+    "class/src/components/datetime/DateTime.js~DateTimeComponent.html#instance-get-timezone",
+    "src/components/datetime/DateTime.js~DateTimeComponent#timezone",
+    "member"
   ],
   [
     "src/components/datetime/datetime.js~datetimecomponent#validationvalue",
@@ -7806,6 +8046,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/radio/radio.js~radiocomponent#emptyvalue",
+    "class/src/components/radio/Radio.js~RadioComponent.html#instance-get-emptyValue",
+    "src/components/radio/Radio.js~RadioComponent#emptyValue",
+    "member"
+  ],
+  [
     "src/components/radio/radio.js~radiocomponent#errorcontainer",
     "class/src/components/radio/Radio.js~RadioComponent.html#instance-member-errorContainer",
     "src/components/radio/Radio.js~RadioComponent#errorContainer",
@@ -8088,6 +8334,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/components/select/select.js~selectcomponent#deletevalue",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-deleteValue",
+    "src/components/select/Select.js~SelectComponent#deleteValue",
+    "method"
+  ],
+  [
     "src/components/select/select.js~selectcomponent#destroy",
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-destroy",
     "src/components/select/Select.js~SelectComponent#destroy",
@@ -8104,6 +8356,12 @@ window.esdocSearchIndex = [
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-elementInfo",
     "src/components/select/Select.js~SelectComponent#elementInfo",
     "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#emptyvalue",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-get-emptyValue",
+    "src/components/select/Select.js~SelectComponent#emptyValue",
+    "member"
   ],
   [
     "src/components/select/select.js~selectcomponent#focus",

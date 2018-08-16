@@ -11,6 +11,7 @@ import Formio from './Formio';
 import Promise from 'native-promise-only';
 import Components from './components/Components';
 import NestedComponent from './components/nested/NestedComponent';
+import { currentTimezone } from './utils/utils';
 
 // Initialize the available forms.
 Formio.forms = {};
@@ -610,6 +611,12 @@ export default class Webform extends NestedComponent {
 
     // Create the form.
     this._form = form;
+
+    // Allow the form to provide component overrides.
+    if (form && form.settings && form.settings.components) {
+      this.options.components = form.settings.components;
+    }
+
     return this.createForm(form).then(() => {
       this.emit('formLoad', form);
       return form;
@@ -761,7 +768,7 @@ export default class Webform extends NestedComponent {
     return this.onElement.then(() => {
       this.clear();
       this.showElement(false);
-      this.build();
+      clearTimeout(this.build());
       this.isBuilt = true;
       this.on('resetForm', () => this.resetValue());
       this.on('deleteSubmission', () => this.deleteSubmission());
@@ -786,6 +793,10 @@ export default class Webform extends NestedComponent {
    */
   setAlert(type, message) {
     if (!type && this.submitted) {
+      if (this.alert) {
+        this.removeChild(this.alert);
+        this.alert = null;
+      }
       return;
     }
     if (this.options.noAlerts) {
@@ -824,6 +835,9 @@ export default class Webform extends NestedComponent {
     this.on('checkValidity', (data) => this.checkValidity(data, true));
     this.addComponents();
     this.on('requestUrl', (args) => (this.submitUrl(args.url,args.headers)));
+    return setTimeout(() => {
+      this.onChange();
+    }, 1);
   }
 
   /**
@@ -967,7 +981,7 @@ export default class Webform extends NestedComponent {
   }
 
   get submissionTimezone() {
-    return _.get(this, '_submission.metadata.timezone', this.timezone);
+    return _.get(this, '_submission.metadata.timezone', currentTimezone());
   }
 
   submitForm(options = {}) {
@@ -1010,13 +1024,20 @@ export default class Webform extends NestedComponent {
         }
 
         this.loading = true;
-        if (this.nosubmit || !this.formio) {
+
+        // Use the form action to submit the form if available.
+        let submitFormio = this.formio;
+        if (this._form && this._form.action) {
+          submitFormio = new Formio(this._form.action, this.formio ? this.formio.options : {});
+        }
+
+        if (this.nosubmit || !submitFormio) {
           return resolve({
             submission: submission,
             saved: false
           });
         }
-        this.formio.saveSubmission(submission).then(result => resolve({
+        submitFormio.saveSubmission(submission).then(result => resolve({
           submission: result,
           saved: true
         })).catch(reject);

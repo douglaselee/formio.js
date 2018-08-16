@@ -203,6 +203,14 @@ export default class BaseComponent {
      */
     this.data = data || {};
 
+    // Allow global override for any component JSON.
+    if (
+      this.options.components &&
+      this.options.components[component.type]
+    ) {
+      _.merge(component, this.options.components[component.type]);
+    }
+
     /**
      * The Form.io component JSON schema.
      * @type {*}
@@ -2676,14 +2684,5 @@ export default class BaseComponent {
     if (input) {
       input.focus();
     }
-  }
-
-  get timezone() {
-    if (navigator.languages && navigator.languages.length) {
-      return (new Date()).toLocaleTimeString(navigator.languages[0], {
-        timeZoneName:'short'
-      }).split(' ')[2];
-    }
-    return moment().format('Z');
   }
 }
