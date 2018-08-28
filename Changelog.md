@@ -4,13 +4,81 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.4.0
+### Added
+ - FOR-1614: Concept of input "widgets" which allows you to attach "calendar" to TextField. More to come.
+ - FOR-1614: Widget settings to TextField component.
+ 
+### Changed
+ - FOR-1616, FOR-1615: Make sure the calendar enforces an input mask and also updates the date on a blur event of the input.
+ 
+### Fixed
+ - Make sure to not send an invalid API call when no resource is provided.
+ - Make the select component work when project url is provided.
+ - Fixed the select component to trigger a refresh when visibility changes.
+ - Fixed the ACE editor to not trigger infinite refresh when new value and existing values are both empty.
+ - FOR-1618: Fix bug where select could get in infinite change.
+ 
+### Removed
+ - FOR-1579: Settings from DateTime component that no longer apply to core renderer.
+
+## 3.3.7
+### Fixed
+ - Problems with infinite onChange events firing from SelectBoxes component.
+ - FOR-1500: Error messages displaying.
+ - FOR-1500: OnChange event infinite loop on Wizard.
+ - Error from occurring in the TextArea builder modal.
+ - WYSIWYG: being empty in read only mode in Wizard on non-first page
+ - FOR-1604: Fixed issue where Select with RefreshOn + ClearOnRefresh will clear its value even when its refresh dependency does not change values. 
+ - Issues with EditGrid triggering validation preemptively.
+
+### Added
+ - Edit Grid: 'formio-component-editgrid-row-open' class for case when any row is open
+ - FOR-672: Copy and paste features on the builder.
+
+## 3.3.6
+### Fixed
+ - Issues with the embed script to try and grab wrong script from the page.
+ - Problems where the default embed script is in Webpack develop mode.
+
+## 3.3.5
+### Fixed
+ - Path issues with s3 uploads that was adding empty directories to the upload paths.
+
+## 3.3.4
+### Fixed
+ - Issues with Invalid date showing up for display times in UTC.
+
+### Changed
+ - Minor text change for the form builder.
+
+## 3.3.3
+### Fixed
+ - Issue where the Content component would not work in builder with Refresh on Change checked.
+
+## 3.3.2
+### Fixed
+ - Problems with undefined promise if no timezone is used.
+ - Default datetime component to now show 24 hour time.
+ - Fixed placeholder on DateTime component to show the standard form.io time format.
+
+### Changed
+ - Added help docs to the DateTime component.
+
+## 3.3.1
+### Fixed
+ - FOR-1560: Date timezones to use moment-timezone with lazy loading zones.
+ - FOR-1445: Problems where duplicates could show up in Select component
+ - Issue that arrises when you send a malformed language code to the switch language system.
+ - Added try/catch blocks around language switching to make it so the renderer is still usable.
+
 ## 3.3.0
 ### Added
  - A DataMap component that provides a dynamic key-value pair input component.
- 
+
  ## Changed
   - Cleanup code around setting the locale in the DateTime component.
- 
+
 ### Fixed
  - FOR-1570: Fixed an issue where the validation would not be removed if the form is valid.
  - FOR-1549: Fixed a problem with Properties settings in form builder was giving wrong format. Changed to DataMap component.

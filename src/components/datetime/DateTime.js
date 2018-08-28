@@ -1,32 +1,19 @@
-import Flatpickr from 'flatpickr';
 import _ from 'lodash';
-
 import BaseComponent from '../base/Base';
-
-import {
-  getDateSetting,
-  offsetDate,
-  formatDate,
-  getLocaleDateFormatInfo,
-  convertFlatpickrToFormat,
-  convertFormatToFlatpickr,
-} from '../../utils/utils';
-import moment from 'moment';
-
 export default class DateTimeComponent extends BaseComponent {
   static schema(...extend) {
     return BaseComponent.schema({
       type: 'datetime',
       label: 'Date / Time',
       key: 'dateTime',
-      format: 'yyyy-MM-dd HH:mm a',
+      format: 'yyyy-MM-dd hh:mm a',
       useLocaleSettings: false,
       allowInput: true,
       enableDate: true,
       enableTime: true,
       defaultDate: '',
       displayInTimezone: 'viewer',
-      timezone: null,
+      timezone: '',
       datepickerMode: 'day',
       datePicker: {
         showWeeks: true,
@@ -63,264 +50,45 @@ export default class DateTimeComponent extends BaseComponent {
 
   constructor(component, options, data) {
     super(component, options, data);
-    this.validators.push('date');
-    this.closedOn = 0;
-    const dateFormatInfo = getLocaleDateFormatInfo(this.options.language);
-    this.defaultFormat = {
-      date: dateFormatInfo.dayFirst ? 'd/m/Y ' : 'm/d/Y ',
-      time: 'h:i K'
+    const timezone = (this.component.timezone || this.options.timezone);
+    const submissionTimezone = this.options.submissionTimezone ||  _.get(this.root, 'options.submissionTimezone');
+
+    /* eslint-disable camelcase */
+    this.component.widget = {
+      type: 'calendar',
+      timezone,
+      displayInTimezone: _.get(this.component, 'displayInTimezone', 'viewer'),
+      submissionTimezone,
+      language: this.options.language,
+      useLocaleSettings: _.get(this.component, 'useLocaleSettings', false),
+      allowInput: _.get(this.component, 'allowInput', true),
+      mode: this.component.multiple ? 'multiple' : 'single',
+      enableTime: _.get(this.component, 'enableTime', true),
+      noCalendar: !_.get(this.component, 'enableDate', true),
+      format: this.component.format,
+      defaultDate: this.component.defaultDate,
+      hourIncrement: _.get(this.component, 'timePicker.hourStep', 1),
+      minuteIncrement: _.get(this.component, 'timePicker.minuteStep', 5),
+      time_24hr: !_.get(this.component, 'timePicker.showMeridian', true),
+      minDate: _.get(this.component, 'datePicker.minDate'),
+      maxDate: _.get(this.component, 'datePicker.maxDate')
     };
+    /* eslint-enable camelcase */
+
+    // Add the validators date.
+    this.validators.push('date');
   }
 
   get defaultSchema() {
     return DateTimeComponent.schema();
   }
 
-  get defaultValue() {
-    const defaultValue = super.defaultValue;
-    if (defaultValue) {
-      return defaultValue;
-    }
-
-    // Check the default date.
-    const defaultDate = this.defaultDate;
-    if (defaultDate) {
-      return defaultDate.toISOString();
-    }
-
-    return '';
-  }
-
-  elementInfo() {
-    // Default the placeholder to the format if none is present.
-    if (!this.component.placeholder) {
-      this.component.placeholder = convertFlatpickrToFormat(this.dateTimeFormat);
-    }
-    const info = super.elementInfo();
-    info.type = 'input';
-    info.attr.type = 'text';
-    info.changeEvent = 'input';
-    this.component.suffix = true;
-    return info;
-  }
-
   get emptyValue() {
     return '';
-  }
-
-  /**
-   * Get the default date for the calendar.
-   * @return {*}
-   */
-  get defaultDate() {
-    return getDateSetting(this.component.defaultDate);
   }
 
   // This select component can handle multiple items on its own.
   createWrapper() {
     return false;
-  }
-
-  get localeFormat() {
-    const dateFormatInfo = getLocaleDateFormatInfo(this.options.language);
-    this.defaultFormat = this.defaultFormat || {
-      date: dateFormatInfo.dayFirst ? 'd/m/Y ' : 'm/d/Y ',
-      time: 'h:i K'
-    };
-    let format = '';
-
-    if (this.component.enableDate) {
-      format += this.defaultFormat.date;
-    }
-
-    if (this.component.enableTime) {
-      format += this.defaultFormat.time;
-    }
-
-    return format;
-  }
-
-  get dateTimeFormat() {
-    return this.component.useLocaleSettings
-      ? this.localeFormat
-      : convertFormatToFlatpickr(_.get(this.component, 'format', 'yyyy-MM-dd HH:mm a'));
-  }
-
-  get timezone() {
-    const timezone = this.component.timezone;
-    if (timezone && timezone.abbr) {
-      return timezone;
-    }
-    if (
-      (this.component.displayInTimezone === 'submission') &&
-      this.root &&
-      this.root.hasTimezone
-    ) {
-      return {
-        offset: this.root.submissionOffset,
-        abbr: this.root.submissionTimezone
-      };
-    }
-    if (this.component.displayInTimezone === 'gmt') {
-      return {
-        offset: 0,
-        abbr: 'GST'
-      };
-    }
-    return null;
-  }
-
-  get config() {
-    const altFormat = this.dateTimeFormat;
-    /* eslint-disable camelcase */
-    return {
-      altInput: true,
-      allowInput: _.get(this.component, 'allowInput', true),
-      clickOpens: true,
-      enableDate: true,
-      mode: this.component.multiple ? 'multiple' : 'single',
-      enableTime: _.get(this.component, 'enableTime', true),
-      noCalendar: !_.get(this.component, 'enableDate', true),
-      altFormat: altFormat,
-      dateFormat: 'U',
-      defaultDate: this.defaultDate,
-      hourIncrement: _.get(this.component, 'timePicker.hourStep', 1),
-      minuteIncrement: _.get(this.component, 'timePicker.minuteStep', 5),
-      time_24hr: !_.get(this.component, 'timePicker.showMeridian', true),
-      minDate: getDateSetting(_.get(this.component, 'datePicker.minDate')),
-      maxDate: getDateSetting(_.get(this.component, 'datePicker.maxDate')),
-      onChange: () => this.onChange({ noValidate: true }),
-      onClose: () => this.closedOn = Date.now(),
-      formatDate: (date, format) => {
-        // Only format this if this is the altFormat and the form is readOnly.
-        if (this.options.readOnly && (format === altFormat)) {
-          const offset = offsetDate(date, this.timezone);
-          return `${Flatpickr.formatDate(offset.date, format)}${offset.abbr}`;
-        }
-
-        return Flatpickr.formatDate(date, format);
-      }
-    };
-    /* eslint-enable camelcase */
-  }
-
-  set disabled(disabled) {
-    super.disabled = disabled;
-    _.each(this.inputs, (input) => {
-      const calendar = this.getCalendar(input);
-      if (calendar) {
-        if (disabled) {
-          calendar._input.setAttribute('disabled', 'disabled');
-        }
-        else {
-          calendar._input.removeAttribute('disabled');
-        }
-        calendar.close();
-        calendar.redraw();
-      }
-    });
-  }
-
-  addSuffix(input, inputGroup) {
-    const suffix = this.ce('span', {
-      class: 'input-group-addon',
-      style: 'cursor: pointer'
-    });
-    suffix.appendChild(this.getIcon(this.component.enableDate ? 'calendar' : 'time'));
-    const calendar = this.getCalendar(input);
-    if (calendar) {
-      this.addEventListener(suffix, 'click', () => {
-        // Make sure the calendar is not already open and that it did not just close (like from blur event).
-        if (!calendar.isOpen && ((Date.now() - this.closedOn) > 200)) {
-          calendar.open();
-        }
-      });
-    }
-    inputGroup.appendChild(suffix);
-    return suffix;
-  }
-
-  /**
-   * Get the calendar or create an instance of one.
-   * @param input
-   * @return {Flatpickr|flatpickr}
-   */
-  getCalendar(input) {
-    if (!input.calendar && !this.options.noCalendar) {
-      input.calendar = new Flatpickr(input, this.config);
-      this.addFocusBlurEvents(input.calendar.altInput);
-    }
-    return input.calendar;
-  }
-
-  getDate(value) {
-    const timestamp = parseInt(value, 10);
-    if (!timestamp) {
-      return null;
-    }
-    return (new Date(timestamp * 1000));
-  }
-
-  get validationValue() {
-    const values = [];
-    for (const i in this.inputs) {
-      if (this.inputs.hasOwnProperty(i)) {
-        if (!this.component.multiple) {
-          return this.getDate(this.inputs[i].value);
-        }
-        values.push(this.getDate(this.inputs[i].value));
-      }
-    }
-    return values;
-  }
-
-  getValueAt(index) {
-    if (!this.inputs[index]) {
-      return '';
-    }
-
-    const calendar = this.getCalendar(this.inputs[index]);
-    if (!calendar) {
-      return super.getValueAt(index);
-    }
-
-    const dates = calendar.selectedDates;
-    if (!dates || !dates.length) {
-      return '';
-    }
-
-    return (typeof dates[0].toISOString === 'function') ? dates[0].toISOString() : 'Invalid Date';
-  }
-
-  getView(value) {
-    if (!value) {
-      return '';
-    }
-    return formatDate(value, _.get(this.component, 'format', 'yyyy-MM-dd HH:mm a'), this.timezone);
-  }
-
-  setValueAt(index, value) {
-    // Convert to a standard ISO-8601 format. Needed for proper IE function.
-    if (value) {
-      value = moment(value).toISOString();
-    }
-
-    super.setValueAt(index, value);
-    const calendar = this.getCalendar(this.inputs[index]);
-    if (calendar) {
-      if (value) {
-        calendar.setDate(new Date(value), false);
-      }
-      else {
-        calendar.clear(false);
-      }
-    }
-  }
-
-  focus() {
-    const input = this.inputs[0];
-    if (input && !this.options.readOnly) {
-      input.calendar.altInput.focus();
-    }
   }
 }
