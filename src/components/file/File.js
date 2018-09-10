@@ -3,6 +3,26 @@ import { uniqueName } from '../../utils/utils';
 import download from 'downloadjs';
 import Formio from '../../Formio';
 
+// canvas.toBlob polyfill.
+if (!HTMLCanvasElement.prototype.toBlob) {
+  Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+    value: function(callback, type, quality) {
+      var canvas = this;
+      setTimeout(function() {
+        var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
+          len = binStr.length,
+          arr = new Uint8Array(len);
+
+        for (var i = 0; i < len; i++) {
+          arr[i] = binStr.charCodeAt(i);
+        }
+
+        callback(new Blob([arr], { type: type || 'image/png' }));
+      });
+    }
+  });
+}
+
 export default class FileComponent extends BaseComponent {
   static schema(...extend) {
     return BaseComponent.schema({
@@ -251,93 +271,200 @@ export default class FileComponent extends BaseComponent {
     );
   }
 
+  startVideo() {
+    const width = parseInt(this.component.webcamSize) || 320;
+    const height = width * 3 / 4;
+    navigator.getMedia = (navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia ||
+      navigator.msGetUserMedia);
+
+    navigator.getMedia(
+      {
+        video: true,
+        audio: false
+      },
+      (stream) => {
+        if (navigator.mozGetUserMedia) {
+          this.video.mozSrcObject = stream;
+        }
+        else {
+          this.video.srcObject = stream;
+          this.video.play();
+        }
+        // height = this.video.videoHeight / (this.video.videoWidth / width);
+        this.video.setAttribute('width', width);
+        this.video.setAttribute('height', height);
+        this.canvas.setAttribute('width', width);
+        this.canvas.setAttribute('height', height);
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
+  }
+
+  takePicture() {
+    const width = parseInt(this.component.webcamSize) || 320;
+    const height = this.video.videoHeight / (this.video.videoWidth / width);
+    this.canvas.getContext('2d').drawImage(this.video, 0, 0, width, height);
+    this.canvas.toBlob(blob => {
+      blob.name = `photo-${Date.now()}.png`;
+      this.upload([blob]);
+    });
+  }
+
   buildUpload() {
     // Drop event must change this pointer so need a reference to parent this.
     const element = this;
     // Declare Camera Instace
     let Camera;
     // Implement Camera file upload for WebView Apps.
-    if ((navigator.camera || Camera) && this.component.image) {
+    if (this.component.image && (navigator.camera || Camera)) {
       const camera = navigator.camera || Camera;
       return this.ce('div', {},
-        (!this.disabled && (this.component.multiple || this.dataValue.length === 0)) ?
-          this.ce('div',
-            {
-              class: 'fileSelector'
-            },
-            [
-              this.ce('button',
-                {
-                  class: 'btn btn-primary',
-                  onClick: (event) => {
-                    event.preventDefault();
-                    camera.getPicture((success) => {
-                      window.resolveLocalFileSystemURL(success, (fileEntry) => {
-                        fileEntry.file((file) => {
-                          this.upload([file]);
-                        });
+        (
+          (!this.disabled && (this.component.multiple || this.dataValue.length === 0)) ?
+            this.ce('div', {
+                class: 'fileSelector'
+              },
+              [
+                this.ce('button', {
+                    class: 'btn btn-primary',
+                    onClick: (event) => {
+                      event.preventDefault();
+                      camera.getPicture((success) => {
+                        window.resolveLocalFileSystemURL(success, (fileEntry) => {
+                            fileEntry.file((file) => {
+                              this.upload([file]);
+                            });
+                          }
+                        );
+                      }, null, { sourceType: camera.PictureSourceType.PHOTOLIBRARY });
+                    }
+                  },
+                  [
+                    this.ce('i', { class: this.iconClass('book') }),
+                    this.text('Gallery')
+                  ]),
+                this.ce('button', {
+                    class: 'btn btn-primary',
+                    onClick: (event) => {
+                      event.preventDefault();
+                      camera.getPicture((success) => {
+                        window.resolveLocalFileSystemURL(success, (fileEntry) => {
+                            fileEntry.file((file) => {
+                              this.upload([file]);
+                            });
+                          }
+                        );
+                      }, null, {
+                        sourceType: camera.PictureSourceType.CAMERA,
+                        encodingType: camera.EncodingType.PNG,
+                        mediaType: camera.MediaType.PICTURE,
+                        saveToPhotoAlbum: true,
+                        correctOrientation: false
                       });
-                    }, null, { sourceType: camera.PictureSourceType.PHOTOLIBRARY });
-                  }
-                },
-                [
-                  this.ce('i', { class: this.iconClass('book') }),
-                  this.text('Gallery')
-                ]
-              ),
-              this.ce('button',
-                {
-                  class: 'btn btn-primary',
-                  onClick: (event) => {
-                    event.preventDefault();
-                    camera.getPicture((success) => {
-                      window.resolveLocalFileSystemURL(success, (fileEntry) => {
-                        fileEntry.file((file) => {
-                          this.upload([file]);
-                        });
-                      });
-                    });
-                  }
-                },
-                [
-                  this.ce('i', { class: this.iconClass('camera') }),
-                  this.text('Camera')
-                ]
-              )
-            ]
-          ) : this.ce('div')
+                    }
+                  },
+                  [
+                    this.ce('i', { class: this.iconClass('camera') }),
+                    this.text('Camera')
+                  ])
+              ]
+            ) :
+            this.ce('div')
+        )
       );
     }
+
     // If this is disabled or a single value with a value, don't show the upload div.
-    return this.ce('div', {},
+    const render = this.ce('div', {},
       (
         (!this.disabled && (this.component.multiple || this.dataValue.length === 0)) ?
-          this.ce('div', {
-            class: 'fileSelector',
-            onDragover(event) {
-              this.className = 'fileSelector fileDragOver';
-              event.preventDefault();
-            },
-            onDragleave(event) {
-              this.className = 'fileSelector';
-              event.preventDefault();
-            },
-            onDrop(event) {
-              this.className = 'fileSelector';
-              event.preventDefault();
-              element.upload(event.dataTransfer.files);
-              return false;
-            }
-          },
+          !this.cameraMode ?
             [
-              this.ce('i', { class: this.iconClass('cloud-upload') }),
-              this.text(' Drop files to attach, or '),
-              this.buildBrowseLink()
+              this.ce('div',
+                {
+                  class: 'fileSelector',
+                  onDragover(event) {
+                    this.className = 'fileSelector fileDragOver';
+                    event.preventDefault();
+                  },
+                  onDragleave(event) {
+                    this.className = 'fileSelector';
+                    event.preventDefault();
+                  },
+                  onDrop(event) {
+                    this.className = 'fileSelector';
+                    event.preventDefault();
+                    element.upload(event.dataTransfer.files);
+                    return false;
+                  }
+                },
+                [
+                  this.ce('i', { class: this.iconClass('cloud-upload') }),
+                  this.text(' Drop files to attach, or '),
+                  this.buildBrowseLink(),
+                  this.component.webcam ?
+                    [
+                      this.text(', or '),
+                      this.ce('a',
+                        {
+                          href: '#',
+                          title: 'Use Web Camera',
+                          onClick: (event) => {
+                            event.preventDefault();
+                            this.cameraMode = !this.cameraMode;
+                            this.refreshDOM();
+                          }
+                        },
+                        this.ce('i', { class: this.iconClass('camera') })
+                      )
+                    ] : null
+                ]
+              ),
+            ] :
+            [
+              this.ce('div',
+                {},
+                [
+                  this.video = this.ce('video', {
+                    class: 'video',
+                    autoplay: true
+                  }),
+                  this.canvas = this.ce('canvas', { style: 'display: none;' }),
+                  this.photo = this.ce('img')
+                ]
+              ),
+              this.ce('div',
+                {
+                  class: 'btn btn-primary',
+                  onClick: () => {
+                    this.takePicture();
+                  }
+                },
+                'Take Photo'
+              ),
+              this.ce('div',
+                {
+                  class: 'btn btn-default',
+                  onClick: () => {
+                    this.cameraMode = !this.cameraMode;
+                    this.refreshDOM();
+                  }
+                },
+                'Switch to file upload'
+              )
             ]
-          ) :
+          :
           this.ce('div')
       )
     );
+    if (this.cameraMode) {
+      this.startVideo();
+    }
+    return render;
   }
 
   buildBrowseLink() {
@@ -400,6 +527,7 @@ export default class FileComponent extends BaseComponent {
   fileSize(a, b, c, d, e) {
     return `${(b = Math, c = b.log, d = 1024, e = c(a) / c(d) | 0, a / b.pow(d, e)).toFixed(2)} ${e ? `${'kMGTPEZY'[--e]}B` : 'Bytes'}`;
   }
+
   /* eslint-enable max-len */
 
   createUploadStatus(fileUpload) {
@@ -418,19 +546,19 @@ export default class FileComponent extends BaseComponent {
       this.ce('div', { class: 'row' }, [
         this.ce('div', { class: 'col-sm-12' }, [
           (fileUpload.status === 'progress' ?
-            this.ce('div', { class: 'progress' },
-              this.ce('div', {
-                class: 'progress-bar',
-                role: 'progressbar',
-                'aria-valuenow': fileUpload.progress,
-                'aria-valuemin': 0,
-                'aria-valuemax': 100,
-                style: `width:${fileUpload.progress}%`
-              },
-                this.ce('span', { class: 'sr-only' }, `${fileUpload.progress}% Complete`)
-              )
-            ) :
-            this.ce('div', { class: `bg-${fileUpload.status}` }, fileUpload.message)
+              this.ce('div', { class: 'progress' },
+                this.ce('div', {
+                    class: 'progress-bar',
+                    role: 'progressbar',
+                    'aria-valuenow': fileUpload.progress,
+                    'aria-valuemin': 0,
+                    'aria-valuemax': 100,
+                    style: `width:${fileUpload.progress}%`
+                  },
+                  this.ce('span', { class: 'sr-only' }, `${fileUpload.progress}% Complete`)
+                )
+              ) :
+              this.ce('div', { class: `bg-${fileUpload.status}` }, fileUpload.message)
           )
         ])
       ])
@@ -474,6 +602,7 @@ export default class FileComponent extends BaseComponent {
     }
     return { regexp: regexp, excludes: excludes };
   }
+
   /* eslint-enable max-depth */
 
   translateScalars(str) {

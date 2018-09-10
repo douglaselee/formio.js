@@ -4,21 +4,103 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.5.1
+### Fixed
+ - Issues where the PDF builder would not load.
+
+## 3.5.0
+### Fixed
+ - Problem where icon configurations would not get passed to sub forms.
+ - Issue when building tabs, they would reset to first tab.
+ - Adding data to add components when moving between tabs.
+ - Fixed a problem where clearOnHide would trigger when navigating between tabs.
+ - Fixed problem where extending forms would modify the Base forms.
+ - Panel style themes for Bootstrap 4 to be consistent with Bootstrap 3.
+ - Issue where the builder would resize continuously.
+
+### Changed
+ - Hide the label settings for Panels since they have a title field.
+ - Upgrade to Babel 8.0 compilations.
+ - Upgraded demo application to Bootstrap 4.
+ - Default size for EditGrid buttons to small.
+
+### Added
+ - URL component
+ - Ability to provide global icons using Formio.icons property.
+
+## 3.4.8
+### Fixed
+ - Problems where the builder sidebar would not collapse the first group causing style issues.
+ - FOR-1618: Fixed problems with infinite refresh loops when clearOnHide is used.
+ - FOR-1670: Fixed issue in EditGrid where errors would persist and not get cleared when a row is canceled.
+ - FOR-1665: Fixed issues where default hidden states would not be set for nested conditionals.
+ - Clear errors when components are hidden.
+
+### Added
+ - Option that adds the ability to add primary project id to the pdf download icon.
+ - A 'change' event to the webform builder anytime the schema changes.
+
+## 3.4.6, 3.4.7
+### Fixed
+ - Cosmetic changes with Bootstrap 4
+ - Fix namespacing of user tokens.
+
+### Changed
+ - i18next@11.7.0, sinon@6.2.0
+
+## 3.4.5
+### Fixed
+ - Issues with the setHidden not working since they were not added to containers.
+ 
+### Changed
+ - Upgrade flatpickr@4.5.2, ace@1.4.1
+
+## 3.4.4
+### Added
+ - Better settings for webcam and make it initialize properly when switching modes.
+
+### Fixed
+ - The form builder to hide sections when the others are clicked for Bootstrap 4.
+ - The form builder to show the default section at first.
+ - The signature refresh button to use the correct class for bootstrap 4.
+ - Style problem where hidden labels would add a space to the top of the control.
+
+## 3.4.3
+### Fixed
+ - Issues where sessionStorage was making the renderer crash for IE browsers.
+ - Problems with the ContainerComponent where it would reset the data objects and stop tracking data changes.
+ - Problem with the core renderer to work when it is pointing to the Form Action API.
+ - Fix web camera option for image uploads.
+
+## 3.4.2
+### Fixed
+ - Field logic simple conditional when key.
+
+## 3.4.1
+### Added
+ - FOR-1635: Add button for taking picture with webcam to image file components.
+
+### Fixed
+ - FOR-1644: Required marks missing when Hide Label is checked for a component
+ - Field logic simple conditional and set required not setting properly.
+ - FOR-1618: Fix infinite loop with hidden, clearOnHide and calculateValue.
+ - FOR-1645: Fix columns in datagrids disappearing.
+
 ## 3.4.0
 ### Added
  - FOR-1614: Concept of input "widgets" which allows you to attach "calendar" to TextField. More to come.
  - FOR-1614: Widget settings to TextField component.
- 
+
 ### Changed
  - FOR-1616, FOR-1615: Make sure the calendar enforces an input mask and also updates the date on a blur event of the input.
- 
+
 ### Fixed
  - Make sure to not send an invalid API call when no resource is provided.
  - Make the select component work when project url is provided.
  - Fixed the select component to trigger a refresh when visibility changes.
  - Fixed the ACE editor to not trigger infinite refresh when new value and existing values are both empty.
  - FOR-1618: Fix bug where select could get in infinite change.
- 
+
 ### Removed
  - FOR-1579: Settings from DateTime component that no longer apply to core renderer.
 
@@ -29,7 +111,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - FOR-1500: OnChange event infinite loop on Wizard.
  - Error from occurring in the TextArea builder modal.
  - WYSIWYG: being empty in read only mode in Wizard on non-first page
- - FOR-1604: Fixed issue where Select with RefreshOn + ClearOnRefresh will clear its value even when its refresh dependency does not change values. 
+ - FOR-1604: Fixed issue where Select with RefreshOn + ClearOnRefresh will clear its value even when its refresh dependency does not change values.
  - Issues with EditGrid triggering validation preemptively.
 
 ### Added

@@ -22,6 +22,7 @@ Formio.registerComponent = Components.setComponent;
 function getOptions(options) {
   options = _.defaults(options, {
     submitOnEnter: false,
+    icons: Formio.icons || '',
     i18next,
   });
   if (!options.events) {
@@ -794,9 +795,9 @@ export default class Webform extends NestedComponent {
    */
   render() {
     return this.onElement.then(() => {
-      this.clear();
+      const state = this.clear();
       this.showElement(false);
-      clearTimeout(this.build());
+      clearTimeout(this.build(state));
       this.isBuilt = true;
       this.on('resetForm', () => this.resetValue());
       this.on('deleteSubmission', () => this.deleteSubmission());
@@ -832,7 +833,7 @@ export default class Webform extends NestedComponent {
         this.alert = null;
       }
       catch (err) {
-        // ingore
+        // ignore
       }
     }
     if (message) {
@@ -851,10 +852,10 @@ export default class Webform extends NestedComponent {
   /**
    * Build the form.
    */
-  build() {
+  build(state) {
     this.on('submitButton', (options) => this.submit(false, options));
     this.on('checkValidity', (data) => this.checkValidity(data, true));
-    this.addComponents();
+    this.addComponents(null, null, null, state);
     this.on('requestUrl', (args) => (this.submitUrl(args.url,args.headers)));
     return setTimeout(() => {
       this.onChange();
@@ -1046,7 +1047,10 @@ export default class Webform extends NestedComponent {
             saved: false
           });
         }
-        submitFormio.saveSubmission(submission).then(result => resolve({
+
+        // If this is an actionUrl, then make sure to save the action and not the submission.
+        const submitMethod = submitFormio.actionUrl ? 'saveAction' : 'saveSubmission';
+        submitFormio[submitMethod](submission).then(result => resolve({
           submission: result,
           saved: true
         })).catch(reject);

@@ -121,12 +121,12 @@ export default class ColumnsComponent extends NestedComponent {
     _.each(this.rows, this.justifyRow.bind(this));
   }
 
-  addComponents() {
+  addComponents(element, data, options, state) {
     const container = this.getContainer();
     container.noDrop = true;
     _.each(this.component.columns, (column) => {
       column.type = 'column';
-      this.addComponent(column, container, this.data);
+      this.addComponent(column, container, this.data, null, null, state);
     });
     this.rows = this.groupByRow();
   }
@@ -134,18 +134,19 @@ export default class ColumnsComponent extends NestedComponent {
   checkConditions(data) {
     if (this.component.autoAdjust) {
       const before = this.nbVisible;
-      super.checkConditions(data);
+      const result = super.checkConditions(data);
       if (before !== this.nbVisible) {
         this.justify();
       }
+      return result;
     }
     else {
-      super.checkConditions(data);
+      return super.checkConditions(data);
     }
   }
 
-  destroy(all) {
-    super.destroy(all);
+  destroy() {
     this.rows = [];
+    return super.destroy();
   }
 }

@@ -55,8 +55,7 @@ export default class PDFBuilder extends WebformBuilder {
 
   render() {
     return this.onElement.then(() => {
-      this.clear();
-      this.build();
+      this.build(this.clear());
       this.isBuilt = true;
       this.on('resetForm', () => this.resetValue());
       this.on('refreshData', () => this.updateValue());
@@ -91,8 +90,8 @@ export default class PDFBuilder extends WebformBuilder {
     return comp;
   }
 
-  addComponent(component, element, data, before) {
-    return super.addComponent(component, element, data, before, true);
+  addComponent(component, element, data, before, noAdd, state) {
+    return super.addComponent(component, element, data, before, true, state);
   }
 
   deleteComponent(component) {
@@ -120,7 +119,9 @@ export default class PDFBuilder extends WebformBuilder {
   }
 
   clear() {
-    this.destroy();
+    const state = {};
+    this.destroy(state);
+    return state;
   }
   redraw() {
     if (this.pdfForm) {
@@ -165,11 +166,6 @@ export default class PDFBuilder extends WebformBuilder {
     this.builderReadyResolve();
   }
 
-  destroy() {
-    this.removeEventListeners();
-    this.destroyComponents();
-  }
-
   build() {
     this.buildSidebar();
     if (!this.pdfForm) {
@@ -177,9 +173,7 @@ export default class PDFBuilder extends WebformBuilder {
       this.pdfForm = new PDF(this.element, this.options);
       this.addClass(this.pdfForm.element, 'formio-pdf-builder');
     }
-    this.pdfForm.removeEventListeners(true);
-    this.pdfForm.events.removeAllListeners();
-    this.pdfForm.destroyComponents();
+    this.pdfForm.destroy();
     this.pdfForm.on('iframe-elementUpdate', schema => {
       const component = this.getComponentById(schema.id);
       if (component && component.component) {

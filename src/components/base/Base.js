@@ -391,6 +391,7 @@ export default class BaseComponent extends Component {
         (key === 'key') ||
         (key === 'label') ||
         (key === 'input') ||
+        (key === 'tableView') ||
         !defaultSchema.hasOwnProperty(key) ||
         _.isArray(val) ||
         (val !== defaultSchema[key])
@@ -890,10 +891,6 @@ export default class BaseComponent extends Component {
     input.value = value;
   }
 
-  bootstrap4Theme(name) {
-    return (name === 'default') ? 'secondary' : name;
-  }
-
   /**
    * Adds a new button to add new rows to the multiple input elements.
    * @returns {HTMLElement} - The "Add New" button html element.
@@ -1044,34 +1041,37 @@ export default class BaseComponent extends Component {
    * @param {HTMLElement} container - The containing element that will contain this label.
    */
   createLabel(container) {
-    if (this.labelIsHidden()) {
-      return;
-    }
+    const isLabelHidden = this.labelIsHidden();
     let className = 'control-label';
     let style = '';
+    if (!isLabelHidden) {
+      const {
+        labelPosition
+      } = this.component;
 
-    const {
-      labelPosition
-    } = this.component;
+      // Determine label styles/classes depending on position.
+      if (labelPosition === 'bottom') {
+        className += ' control-label--bottom';
+      }
+      else if (labelPosition && labelPosition !== 'top') {
+        const labelWidth = this.getLabelWidth();
+        const labelMargin = this.getLabelMargin();
 
-    // Determine label styles/classes depending on position.
-    if (labelPosition === 'bottom') {
-      className += ' control-label--bottom';
+        // Label is on the left or right.
+        if (this.labelOnTheLeft(labelPosition)) {
+          style += `float: left; width: ${labelWidth}%; margin-right: ${labelMargin}%; `;
+        }
+        else if (this.labelOnTheRight(labelPosition)) {
+          style += `float: right; width: ${labelWidth}%; margin-left: ${labelMargin}%; `;
+        }
+        if (this.rightAlignedLabel(labelPosition)) {
+          style += 'text-align: right; ';
+        }
+      }
     }
-    else if (labelPosition && labelPosition !== 'top') {
-      const labelWidth = this.getLabelWidth();
-      const labelMargin = this.getLabelMargin();
-
-      // Label is on the left or right.
-      if (this.labelOnTheLeft(labelPosition)) {
-        style += `float: left; width: ${labelWidth}%; margin-right: ${labelMargin}%; `;
-      }
-      else if (this.labelOnTheRight(labelPosition)) {
-        style += `float: right; width: ${labelWidth}%; margin-left: ${labelMargin}%; `;
-      }
-      if (this.rightAlignedLabel(labelPosition)) {
-        style += 'text-align: right; ';
-      }
+    else {
+      this.addClass(container, 'formio-component-label-hidden');
+      className += ' control-label--hidden';
     }
 
     if (this.hasInput && this.component.validate && this.component.validate.required) {
@@ -1081,11 +1081,13 @@ export default class BaseComponent extends Component {
       class: className,
       style
     });
-    if (this.info.attr.id) {
-      this.labelElement.setAttribute('for', this.info.attr.id);
+    if (!isLabelHidden) {
+      if (this.info.attr.id) {
+        this.labelElement.setAttribute('for', this.info.attr.id);
+      }
+      this.labelElement.appendChild(this.text(this.component.label));
+      this.createTooltip(this.labelElement);
     }
-    this.labelElement.appendChild(this.text(this.component.label));
-    this.createTooltip(this.labelElement);
     container.appendChild(this.labelElement);
   }
 
@@ -1337,8 +1339,7 @@ export default class BaseComponent extends Component {
     if (!this.isBuilt) {
       return;
     }
-    this.clear();
-    this.build();
+    this.build(this.clear());
   }
 
   destroyInputs() {
@@ -1362,8 +1363,9 @@ export default class BaseComponent extends Component {
    * Remove all event handlers.
    */
   destroy() {
-    super.destroy();
+    const state = super.destroy() || {};
     this.destroyInputs();
+    return state;
   }
 
   /**
@@ -1573,7 +1575,7 @@ export default class BaseComponent extends Component {
    *
    * @param show
    */
-  show(show) {
+  show(show, noClear) {
     if (
       this.options.hide &&
       this.options.hide[this.component.key]
@@ -1597,7 +1599,9 @@ export default class BaseComponent extends Component {
 
     this._visible = show;
     this.showElement(show && !this.component.hidden);
-    this.clearOnHide(show);
+    if (!noClear) {
+      this.clearOnHide(show);
+    }
     return show;
   }
 
@@ -1908,7 +1912,9 @@ export default class BaseComponent extends Component {
    * Deletes the value of the component.
    */
   deleteValue() {
-    this.setValue(null);
+    this.setValue(null, {
+      noUpdateEvent: true
+    });
     _.unset(this.data, this.key);
   }
 
@@ -2030,7 +2036,9 @@ export default class BaseComponent extends Component {
    * @return {boolean} - If the value changed during calculation.
    */
   calculateValue(data, flags) {
-    if (!this.component.calculateValue) {
+    // If no calculated value or
+    // hidden and set to clearOnHide (Don't calculate a value for a hidden field set to clear when hidden)
+    if (!this.component.calculateValue || ((!this.visible || this.component.hidden) && this.component.clearOnHide)) {
       return false;
     }
 
@@ -2389,9 +2397,13 @@ export default class BaseComponent extends Component {
     }
   }
 
+  /**
+   * Destroys and clears a component and returns the current state.
+   */
   clear() {
-    this.destroy();
+    const state = this.destroy() || {};
     this.empty(this.getElement());
+    return state;
   }
 
   /**
